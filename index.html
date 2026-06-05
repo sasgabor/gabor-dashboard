@@ -1,4 +1,6 @@
 <!DOCTYPE html>
+<html lang="hu">
+<head>
 <script>
 (function() {
   var correct = "Sasgabor1959";
@@ -6,16 +8,14 @@
   if (stored !== correct) {
     var attempt = prompt("Jelszó szükséges:");
     if (attempt !== correct) {
-      document.write("<div style=\"font-family:sans-serif;text-align:center;margin-top:20%;font-size:1.2rem;\">Hozzáférés megtagadva.<\/div>");
+      document.write("<div style=\"font-family:sans-serif;text-align:center;margin-top:20%\">Hozzáférés megtagadva.<\/div>");
       document.close();
-      throw new Error("Auth failed");
+      throw new Error("stop");
     }
     sessionStorage.setItem("gos_auth", correct);
   }
 })();
 </script>
-<html lang="hu">
-<head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gábor OS – Személyes Dashboard</title>
