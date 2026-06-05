@@ -531,7 +531,7 @@ async function loadData() {
   label.textContent = 'Notion betöltése...';
 
   try {
-    var res = await fetch(PROXY + '/v1/databases/' + DB_ID + '/query', {
+    var res = await fetch(PROXY + '/notion/databases/' + DB_ID + '/query', {
       method: 'POST',
       headers: {
         'Authorization': 'Bearer ' + TOKEN,
