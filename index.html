@@ -1,4 +1,19 @@
 <!DOCTYPE html>
+<script>
+(function() {
+  var correct = "Sasgabor1959";
+  var stored = sessionStorage.getItem("gos_auth");
+  if (stored !== correct) {
+    var attempt = prompt("Jelszó szükséges:");
+    if (attempt !== correct) {
+      document.write("<div style=\"font-family:sans-serif;text-align:center;margin-top:20%;font-size:1.2rem;\">Hozzáférés megtagadva.<\/div>");
+      document.close();
+      throw new Error("Auth failed");
+    }
+    sessionStorage.setItem("gos_auth", correct);
+  }
+})();
+</script>
 <html lang="hu">
 <head>
 <meta charset="UTF-8">
