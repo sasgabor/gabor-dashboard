@@ -534,9 +534,14 @@ function render(items) {
     ? folItems.map(function(i){ return projectCard(i, false); }).join('')
     : '<div class="project-card" style="color:var(--ink3);font-size:0.82rem;">Nincs folyamatban lévő projekt.</div>';
 
-  document.getElementById('col-kesz').innerHTML = keszItems.length
+  var keszHtml = '<div class="project-card" style="border-left:3px solid var(--ink3);margin-bottom:4px;">'
+    + '<div style="font-size:0.75rem;color:var(--ink3);line-height:1.5;">'
+    + '📌 <strong style="color:var(--ink2);">2026.06.05. 19:00 előtt</strong> elvégzett fejlesztések itt nem szerepelnek – '
+    + 'a projekt-követés ettől az időponttól indul. Az elvégzett munkák a Notion Wiki-ben és a rendszerpromptban dokumentáltak.'
+    + '</div></div>';
+  document.getElementById('col-kesz').innerHTML = keszHtml + (keszItems.length
     ? keszItems.map(function(i){ return projectCard(i, true); }).join('')
-    : '<div class="project-card" style="color:var(--ink3);font-size:0.82rem;">Még nincs kész projekt.</div>';
+    : '');
 
   var rightItems = nemItems.concat(blokItems);
   document.getElementById('col-nem-kezdett').innerHTML = rightItems.length
