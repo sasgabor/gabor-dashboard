@@ -1,0 +1,551 @@
+<!DOCTYPE html>
+<html lang="hu">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gábor OS – Személyes Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #f5f2ed; --bg2: #edeae3; --surface: #ffffff;
+    --border: #e0dbd2; --text: #1a1714; --text2: #5a5248; --muted: #9a9088;
+    --accent: #2d6a4f; --accent2: #40916c; --accent-light: #d8f3dc;
+    --warn: #e07a00; --red: #c0392b; --blue: #2563eb;
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
+    --shadow-hover: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Outfit',sans-serif; min-height:100vh; padding-bottom:48px; }
+
+  .header { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 24px; position:sticky; top:0; z-index:100; display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow); }
+  .header h1 { font-family:'Playfair Display',serif; font-size:20px; font-weight:600; }
+  .header .tagline { font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-top:2px; }
+  .header-date { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); background:var(--bg2); padding:6px 12px; border-radius:6px; border:1px solid var(--border); }
+
+  .main { max-width:860px; margin:0 auto; padding:24px 20px; }
+
+  .loading { text-align:center; padding:60px 20px; color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:13px; }
+  .loading-spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
+  @keyframes spin { to { transform:rotate(360deg); } }
+
+  .error-box { background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:20px; margin:20px 0; color:#991b1b; font-size:13px; }
+
+  .grid { display:grid; gap:16px; }
+  .grid-2 { grid-template-columns:1fr 1fr; }
+  .grid-3 { grid-template-columns:1fr 1fr 1fr; }
+  @media(max-width:620px) { .grid-2,.grid-3 { grid-template-columns:1fr; } .header { flex-direction:column; align-items:flex-start; gap:8px; } }
+
+  .section-label { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.14em; color:var(--muted); text-transform:uppercase; margin:28px 0 12px; }
+
+  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; box-shadow:var(--shadow); transition:box-shadow 0.2s; }
+  .card:hover { box-shadow:var(--shadow-hover); }
+  .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+  .card-title { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.1em; color:var(--muted); text-transform:uppercase; }
+  .card-date { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); background:var(--bg2); padding:3px 7px; border-radius:4px; }
+
+  .mission { background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:10px; padding:20px 24px; margin-bottom:4px; box-shadow:var(--shadow); cursor:pointer; }
+  .mission-label { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--accent); text-transform:uppercase; margin-bottom:10px; display:flex; justify-content:space-between; }
+  .mission-text { font-family:'Playfair Display',serif; font-style:italic; font-size:15px; line-height:1.7; color:var(--text2); }
+  .mission-extra { overflow:hidden; max-height:0; transition:max-height 0.4s ease; }
+  .mission-extra.open { max-height:200px; }
+  .mission-decision { margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); font-style:italic; }
+
+  .streak-card { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px 16px; text-align:center; }
+  .streak-icon { font-size:26px; margin-bottom:8px; }
+  .streak-num { font-family:'Playfair Display',serif; font-size:52px; line-height:1; color:var(--accent); margin-bottom:4px; }
+  .streak-label { font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; letter-spacing:0.08em; }
+  .streak-sub { font-size:11px; color:var(--accent); margin-top:6px; font-weight:500; }
+
+  .metric-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
+  .metric-row:last-child { border-bottom:none; }
+  .metric-label { font-size:13px; color:var(--text2); }
+  .metric-right { display:flex; align-items:center; gap:8px; }
+  .metric-value { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text); }
+  .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
+  .dot-green { background:var(--accent2); }
+  .dot-yellow { background:var(--warn); }
+  .dot-red { background:var(--red); }
+
+  .prog-wrap { margin-bottom:14px; }
+  .prog-wrap:last-child { margin-bottom:0; }
+  .prog-top { display:flex; justify-content:space-between; margin-bottom:5px; }
+  .prog-label { font-size:12px; color:var(--text2); }
+  .prog-val { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
+  .prog-bar { height:5px; background:var(--bg2); border-radius:3px; overflow:hidden; }
+  .prog-fill { height:100%; border-radius:3px; }
+  .fill-green { background:var(--accent2); }
+  .fill-yellow { background:var(--warn); }
+  .fill-red { background:var(--red); }
+
+  .today-item { display:flex; align-items:center; gap:14px; padding:11px 4px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; border-radius:4px; }
+  .today-item:hover { background:var(--bg); }
+  .today-item:last-child { border-bottom:none; }
+  .today-time { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); width:38px; flex-shrink:0; }
+  .today-content { flex:1; }
+  .today-name { font-size:13px; color:var(--text); font-weight:500; }
+  .today-sub { font-size:11px; color:var(--muted); margin-top:1px; }
+  .today-badge { font-family:'JetBrains Mono',monospace; font-size:9px; padding:3px 7px; border-radius:4px; flex-shrink:0; }
+  .badge-sport { background:var(--accent-light); color:var(--accent); }
+  .badge-iroda { background:#e8f4fd; color:var(--blue); }
+  .badge-rutin { background:var(--bg2); color:var(--muted); border:1px solid var(--border); }
+  .badge-reflex { background:#fef9e7; color:#b7860a; }
+
+  .goal-card { background:var(--accent-light); border:1px solid #b7e4c7; border-radius:10px; padding:18px 20px; box-shadow:var(--shadow); }
+  .goal-line { font-size:14px; color:var(--text); line-height:1.8; }
+  .goal-line strong { color:var(--accent); }
+
+  .quick-link { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:18px 12px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:all 0.2s; text-decoration:none; box-shadow:var(--shadow); }
+  .quick-link:hover { box-shadow:var(--shadow-hover); border-color:var(--accent); transform:translateY(-1px); }
+  .quick-link .ql-icon { font-size:22px; margin-bottom:6px; }
+  .quick-link .ql-label { font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; text-align:center; }
+
+  .toggle-arrow { transition:transform 0.3s; display:inline-block; font-size:12px; color:var(--muted); }
+  .toggle-arrow.open { transform:rotate(180deg); }
+  .collapsible { overflow:hidden; max-height:0; transition:max-height 0.4s ease; }
+  .collapsible.open { max-height:600px; }
+
+  .last-updated { text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); margin-top:32px; padding-top:16px; border-top:1px solid var(--border); }
+
+  a { text-decoration:none; color:inherit; }
+
+  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
+  .fade-in { animation:fadeUp 0.4s ease forwards; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div>
+    <h1>Gábor OS</h1>
+    <div class="tagline">személyes operációs rendszer · 2026</div>
+  </div>
+  <div class="header-date" id="header-date">betöltés...</div>
+</div>
+
+<div class="main">
+  <div class="loading" id="loading">
+    <div class="loading-spinner"></div>
+    Notion adatok betöltése...
+  </div>
+
+  <div id="dashboard" style="display:none">
+
+    <!-- KÜLDETÉS -->
+    <div class="mission" onclick="toggleMission()">
+      <div class="mission-label">🎯 Küldetésem <span class="toggle-arrow" id="mission-arrow">▼</span></div>
+      <div class="mission-text">„Minden reggel hálával ébredek azért amim van, és tudatosan dolgozom azon, hogy a lehető legjobb Sas Gáborrá váljak – mert csak így tudok igazán adni."</div>
+      <div class="mission-extra" id="mission-extra">
+        <div style="margin-top:12px;font-family:'Playfair Display',serif;font-style:italic;font-size:14px;line-height:1.7;color:var(--text2)">„Minden nap tanulok valamit amit nem tudtam tegnap, és megteszem azt az egy dolgot – akár csak 5 percet – ami legalább egy ember életét egy kicsit jobbá teszi körülöttem: a cégemben, a családomban. Nem holnaptól. Ma."</div>
+        <div class="mission-decision">🔄 Döntési iránytű: „Illik az identitásomhoz? A lelkiismeretem elégedett?"</div>
+      </div>
+    </div>
+
+    <!-- STREAK-EK -->
+    <div class="section-label">🔥 Streak-ek</div>
+    <div class="grid grid-2">
+      <div class="card streak-card">
+        <div class="streak-icon">🍬</div>
+        <div class="streak-num" id="cukor-szam">–</div>
+        <div class="streak-label">Cukormentes nap</div>
+        <div class="streak-sub" id="cukor-sub">betöltés...</div>
+      </div>
+      <div class="card streak-card">
+        <div class="streak-icon">🌾</div>
+        <div class="streak-num" id="liszt-szam">–</div>
+        <div class="streak-label">Lisztmentes nap</div>
+        <div class="streak-sub" id="liszt-sub">betöltés...</div>
+      </div>
+    </div>
+
+    <!-- EGÉSZSÉG -->
+    <div class="section-label">⚖️ Egészségi mérők</div>
+    <div class="grid grid-2">
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Mérleg</span>
+          <span class="card-date" id="feelfit-date">–</span>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-top"><span class="prog-label">Testsúly</span><span class="prog-val" id="suly-val">– kg</span></div>
+          <div class="prog-bar"><div class="prog-fill fill-yellow" id="suly-bar" style="width:0%"></div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-top"><span class="prog-label">Zsigeri zsír</span><span class="prog-val" id="zsiger-val">–</span></div>
+          <div class="prog-bar"><div class="prog-fill fill-yellow" id="zsiger-bar" style="width:0%"></div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-top"><span class="prog-label">Testzsír%</span><span class="prog-val" id="testzsir-val">–%</span></div>
+          <div class="prog-bar"><div class="prog-fill fill-red" id="testzsir-bar" style="width:0%"></div></div>
+        </div>
+        <div class="prog-wrap">
+          <div class="prog-top"><span class="prog-label">Izomtömeg</span><span class="prog-val" id="izom-val">– kg</span></div>
+          <div class="prog-bar"><div class="prog-fill fill-green" id="izom-bar" style="width:60%"></div></div>
+        </div>
+        <div style="margin-top:12px">
+          <div onclick="toggleSection('merleg-extra','merleg-arrow')" style="font-size:11px;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;">
+            Részletek <span class="toggle-arrow" id="merleg-arrow">▼</span>
+          </div>
+          <div class="collapsible" id="merleg-extra">
+            <div style="margin-top:10px" id="merleg-details"></div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header">
+          <span class="card-title">Garmin</span>
+          <span class="card-date" id="garmin-date">–</span>
+        </div>
+        <div id="garmin-metrics"></div>
+      </div>
+    </div>
+
+    <!-- MAI CÉL -->
+    <div class="section-label">🎯 Mai cél</div>
+    <div class="goal-card">
+      <div class="goal-line" id="mai-cel">betöltés...</div>
+    </div>
+
+    <!-- MAI NAPIREND -->
+    <div class="section-label">📅 Mai napirend</div>
+    <div class="card" id="napirend-card"></div>
+
+    <!-- GYORS LINKEK -->
+    <div class="section-label">🔗 Gyors linkek</div>
+    <div class="grid grid-3">
+      <a href="https://app.notion.com/p/373a30954a74816d92eefbdd8b7922c8" target="_blank" class="quick-link">
+        <div class="ql-icon">💪</div><div class="ql-label">Egészség & Életmód</div>
+      </a>
+      <a href="https://app.notion.com/p/375a30954a74817e9e65e00118389bb5" target="_blank" class="quick-link">
+        <div class="ql-icon">⚡</div><div class="ql-label">Mikroedzés leírás</div>
+      </a>
+      <a href="https://app.notion.com/p/375a30954a748114bdb4dd3186c6bee9" target="_blank" class="quick-link">
+        <div class="ql-icon">😊</div><div class="ql-label">Arctorna leírás</div>
+      </a>
+      <a href="https://app.notion.com/p/375a30954a748139b14ed183a0131070" target="_blank" class="quick-link">
+        <div class="ql-icon">🪞</div><div class="ql-label">Esti Reflexió</div>
+      </a>
+      <a href="https://app.notion.com/p/373a30954a7481dd9dd5c6864235fdab" target="_blank" class="quick-link">
+        <div class="ql-icon">🎯</div><div class="ql-label">Személyes Fejlődés</div>
+      </a>
+      <a href="https://app.notion.com/p/373a30954a7481a69e3bd4533014a585" target="_blank" class="quick-link">
+        <div class="ql-icon">🗺️</div><div class="ql-label">Navigációs Index</div>
+      </a>
+    </div>
+
+    <div class="last-updated" id="last-updated"></div>
+  </div>
+</div>
+
+<script>
+const NOTION_TOKEN = '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';
+const EGESZSEG_PAGE_ID = '373a30954a74816d92eefbdd8b7922c8';
+const PROXY = 'https://api.allorigins.win/raw?url=';
+
+const DAYS_HU = ['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
+const MONTHS_HU = ['január','február','március','április','május','június','július','augusztus','szeptember','október','november','december'];
+
+function today() {
+  const d = new Date();
+  return `${d.getFullYear()}. ${MONTHS_HU[d.getMonth()]} ${d.getDate()}., ${DAYS_HU[d.getDay()]}`;
+}
+
+async function notionFetch(endpoint, body) {
+  const url = `https://api.notion.com/v1/${endpoint}`;
+  const opts = {
+    method: body ? 'POST' : 'GET',
+    headers: {
+      'Authorization': `Bearer ${NOTION_TOKEN}`,
+      'Notion-Version': '2022-06-28',
+      'Content-Type': 'application/json'
+    }
+  };
+  if (body) opts.body = JSON.stringify(body);
+
+  // Try direct first, fallback to proxy
+  try {
+    const r = await fetch(url, opts);
+    if (r.ok) return await r.json();
+  } catch(e) {}
+
+  // Proxy fallback
+  const proxyUrl = PROXY + encodeURIComponent(url);
+  const r2 = await fetch(proxyUrl, opts);
+  return await r2.json();
+}
+
+async function getPageBlocks(pageId) {
+  const data = await notionFetch(`blocks/${pageId}/children?page_size=100`);
+  return data.results || [];
+}
+
+function extractText(block) {
+  const type = block.type;
+  const content = block[type];
+  if (!content) return '';
+  const rich = content.rich_text || content.text || [];
+  return rich.map(r => r.plain_text || '').join('');
+}
+
+function parseCounters(blocks) {
+  let cukor = null, liszt = null;
+  let inCounters = false;
+
+  for (const block of blocks) {
+    const text = extractText(block);
+
+    if (text.includes('Számlálók') || text.includes('szamlalok') || text.includes('SZÁMLÁLÓK')) {
+      inCounters = true;
+    }
+
+    if (inCounters) {
+      const cukorMatch = text.match(/Cukormentes.*?(\d+)/i);
+      const lisztMatch = text.match(/Lisztmentes.*?(\d+)/i);
+      if (cukorMatch) cukor = parseInt(cukorMatch[1]);
+      if (lisztMatch) liszt = parseInt(lisztMatch[1]);
+      if (cukor && liszt) break;
+    }
+  }
+  return { cukor, liszt };
+}
+
+function parseHealthData(blocks) {
+  const data = {
+    suly: null, zsiger: null, testzsir: null, izom: null,
+    protein: null, bmr: null, viz: null, csont: null,
+    pulzus: null, hrv: null, lepesek: null, alvas: null,
+    bojt: null, bb_reggel: null, vo2: null,
+    feelfit_date: null, garmin_date: null
+  };
+
+  for (const block of blocks) {
+    const text = extractText(block);
+
+    // Feelfit data
+    if (text.match(/Testsúly|Testsuly/i)) {
+      const m = text.match(/(\d+[\.,]\d+)\s*kg/);
+      if (m) data.suly = parseFloat(m[1].replace(',','.'));
+      const dm = text.match(/(\d{4}\.\d{2}\.\d{2})/);
+      if (dm) data.feelfit_date = dm[1];
+    }
+    if (text.match(/Zsigeri zsír|Zsigeri zsir/i)) {
+      const m = text.match(/:\s*(\d+)/);
+      if (m) data.zsiger = parseInt(m[1]);
+    }
+    if (text.match(/Testzsír%|Testzsir%/i)) {
+      const m = text.match(/(\d+[\.,]\d+)%/);
+      if (m) data.testzsir = parseFloat(m[1].replace(',','.'));
+    }
+    if (text.match(/Izomtömeg|Izomtomeg/i)) {
+      const m = text.match(/(\d+[\.,]?\d*)\s*kg/);
+      if (m) data.izom = parseFloat(m[1].replace(',','.'));
+    }
+    if (text.match(/Protein/i)) {
+      const m = text.match(/(\d+[\.,]\d+)%/);
+      if (m) data.protein = parseFloat(m[1].replace(',','.'));
+    }
+    if (text.match(/BMR/i)) {
+      const m = text.match(/(\d+)\s*kcal/);
+      if (m) data.bmr = parseInt(m[1]);
+    }
+
+    // Garmin data
+    if (text.match(/Ny\.\s*pulzus|Nyugalmi pulzus/i)) {
+      const m = text.match(/(\d+)\s*bpm/);
+      if (m) data.pulzus = parseInt(m[1]);
+      const dm = text.match(/(\d{4}\.\d{2}\.\d{2})/);
+      if (dm) data.garmin_date = dm[1];
+    }
+    if (text.match(/HRV 7 napos/i)) {
+      const m = text.match(/:\s*(\d+[\.,]?\d*)/);
+      if (m) data.hrv = parseFloat(m[1].replace(',','.'));
+    }
+    if (text.match(/Lépések|Lepesek/i)) {
+      const m = text.match(/(\d[\d\s]*)\s*(db|→|cél)/i);
+      if (m) data.lepesek = parseInt(m[1].replace(/\s/g,''));
+    }
+    if (text.match(/Alváspontszám|Alvaspontszam/i)) {
+      const m = text.match(/(\d+)/);
+      if (m) data.alvas = parseInt(m[1]);
+    }
+    if (text.match(/Böjt|Bojt/i)) {
+      const m = text.match(/~?(\d+h\d+|[\d,\.]+h)/i);
+      if (m) data.bojt = m[1];
+    }
+    if (text.match(/BB reggel/i)) {
+      const m = text.match(/(\d+)/);
+      if (m) data.bb_reggel = parseInt(m[1]);
+    }
+    if (text.match(/VO2max/i)) {
+      const m = text.match(/:\s*(\d+)/);
+      if (m) data.vo2 = parseInt(m[1]);
+    }
+  }
+
+  return data;
+}
+
+function getDayType() {
+  const day = new Date().getDay();
+  const types = {
+    1: { name: 'Hétfő', type: 'Erő A (30-40 perc)', badge: 'badge-sport' },
+    2: { name: 'Kedd', type: 'Séta / Aktív pihenő', badge: 'badge-rutin' },
+    3: { name: 'Szerda', type: 'Erő B (30-40 perc)', badge: 'badge-sport' },
+    4: { name: 'Csütörtök', type: 'Erő C (30-40 perc)', badge: 'badge-sport' },
+    5: { name: 'Péntek', type: 'Könnyű nap', badge: 'badge-rutin' },
+    6: { name: 'Szombat', type: 'Hosszú séta', badge: 'badge-rutin' },
+    0: { name: 'Vasárnap', type: 'Pihenő nap', badge: 'badge-rutin' }
+  };
+  return types[day];
+}
+
+function renderNapirend(dayInfo) {
+  const card = document.getElementById('napirend-card');
+  card.innerHTML = `<div class="card-title" style="margin-bottom:16px">${dayInfo.name} – ${dayInfo.type}</div>`;
+
+  const items = [
+    { time: '05:00', name: `💪 ${dayInfo.type}`, sub: 'reggeli edzés / rutin', badge: dayInfo.badge, link: 'https://app.notion.com/p/373a30954a74816d92eefbdd8b7922c8' },
+    { time: '06:00', name: '🧭 Napi Iránytű olvasás', sub: 'küldetés · adatok · célok', badge: 'badge-rutin', link: 'https://app.notion.com/p/373a30954a74816d92eefbdd8b7922c8' },
+    { time: '10:00', name: '⚡ Mikroedzés', sub: '10 perc', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' },
+    { time: '11:00', name: '😊 Arctorna', sub: '2 perc · 6 gyakorlat', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a748114bdb4dd3186c6bee9' },
+    { time: '14:00', name: '⚡ Mikroedzés', sub: '10 perc', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' },
+    { time: '16:00', name: '😊 Arctorna', sub: '2 perc · 6 gyakorlat', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a748114bdb4dd3186c6bee9' },
+    { time: '16:30', name: '⚡ Mikroedzés', sub: '10 perc', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' },
+    { time: 'este', name: '🚶 Séta + 🧖 Szauna', sub: '3–4 km orrlélegzéssel', badge: 'badge-rutin', link: null },
+    { time: '21:00', name: '🪞 Esti Reflexió', sub: '5–10 perc · 4 kérdés · Notionbe', badge: 'badge-reflex', link: 'https://app.notion.com/p/375a30954a748139b14ed183a0131070' }
+  ];
+
+  items.forEach(item => {
+    const el = document.createElement('div');
+    el.className = 'today-item';
+    if (item.link) el.onclick = () => window.open(item.link, '_blank');
+    el.innerHTML = `
+      <span class="today-time">${item.time}</span>
+      <div class="today-content">
+        <div class="today-name">${item.name}</div>
+        <div class="today-sub">${item.sub}</div>
+      </div>
+      <span class="today-badge ${item.badge}">${item.badge.replace('badge-','').toUpperCase()}</span>
+    `;
+    card.appendChild(el);
+  });
+}
+
+function renderGarmin(data) {
+  const metrics = [
+    { label: 'Ny. pulzus', value: data.pulzus ? `${data.pulzus} bpm` : '–', dot: data.pulzus && data.pulzus < 60 ? 'dot-green' : 'dot-yellow' },
+    { label: 'HRV 7 napos', value: data.hrv ? `${data.hrv} → 45+` : '–', dot: data.hrv && data.hrv >= 40 ? 'dot-green' : 'dot-yellow' },
+    { label: 'Alváspontszám', value: data.alvas ? `${data.alvas}/100` : '–', dot: data.alvas && data.alvas >= 85 ? 'dot-green' : 'dot-yellow' },
+    { label: 'Böjt', value: data.bojt ? `~${data.bojt}` : '–', dot: 'dot-green' },
+    { label: 'BB reggel', value: data.bb_reggel ? `${data.bb_reggel}/100` : '–', dot: data.bb_reggel && data.bb_reggel >= 80 ? 'dot-green' : 'dot-yellow' },
+    { label: 'VO2max', value: data.vo2 ? `${data.vo2} → 35+` : '–', dot: data.vo2 && data.vo2 >= 30 ? 'dot-yellow' : 'dot-red' },
+    { label: 'Lépések', value: data.lepesek ? data.lepesek.toLocaleString('hu') : '–', dot: data.lepesek && data.lepesek >= 8000 ? 'dot-green' : 'dot-yellow' }
+  ];
+
+  const container = document.getElementById('garmin-metrics');
+  container.innerHTML = metrics.map(m => `
+    <div class="metric-row">
+      <span class="metric-label">${m.label}</span>
+      <div class="metric-right">
+        <span class="metric-value">${m.value}</span>
+        <div class="dot ${m.dot}"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+async function loadDashboard() {
+  try {
+    document.getElementById('header-date').textContent = today();
+
+    const blocks = await getPageBlocks(EGESZSEG_PAGE_ID);
+
+    // Parse counters
+    const { cukor, liszt } = parseCounters(blocks);
+    document.getElementById('cukor-szam').textContent = cukor || '–';
+    document.getElementById('liszt-szam').textContent = liszt || '–';
+    document.getElementById('cukor-sub').textContent = cukor ? `→ ma a ${cukor + 1}. lehet!` : '';
+    document.getElementById('liszt-sub').textContent = liszt ? `→ ma a ${liszt + 1}. lehet!` : '';
+
+    // Parse health data
+    const health = parseHealthData(blocks);
+
+    // Mérleg
+    if (health.feelfit_date) document.getElementById('feelfit-date').textContent = health.feelfit_date;
+    if (health.suly) {
+      document.getElementById('suly-val').textContent = `${health.suly} → 79.9 kg`;
+      const pct = Math.min(100, Math.max(0, ((health.suly - 79.9) / (100 - 79.9)) * 100));
+      document.getElementById('suly-bar').style.width = pct + '%';
+    }
+    if (health.zsiger) {
+      document.getElementById('zsiger-val').textContent = `${health.zsiger} → 7–8`;
+      document.getElementById('zsiger-bar').style.width = Math.min(100, (health.zsiger / 20) * 100) + '%';
+    }
+    if (health.testzsir) {
+      document.getElementById('testzsir-val').textContent = `${health.testzsir}% → 25%`;
+      document.getElementById('testzsir-bar').style.width = Math.min(100, (health.testzsir / 40) * 100) + '%';
+    }
+    if (health.izom) {
+      document.getElementById('izom-val').textContent = `${health.izom} kg ↑`;
+    }
+
+    // Merleg details
+    const details = [];
+    if (health.protein) details.push({ label: 'Protein', value: `${health.protein}%` });
+    if (health.bmr) details.push({ label: 'BMR', value: `${health.bmr} kcal` });
+    if (health.csont) details.push({ label: 'Csont tömeg', value: `${health.csont} kg` });
+    document.getElementById('merleg-details').innerHTML = details.map(d => `
+      <div class="metric-row"><span class="metric-label">${d.label}</span><span class="metric-value">${d.value}</span></div>
+    `).join('');
+
+    // Garmin
+    if (health.garmin_date) document.getElementById('garmin-date').textContent = health.garmin_date;
+    renderGarmin(health);
+
+    // Mai cél
+    const cukorNext = cukor ? cukor + 1 : '?';
+    const lisztNext = liszt ? liszt + 1 : '?';
+    document.getElementById('mai-cel').innerHTML = `
+      🍬 Legyen ez a <strong>${cukorNext}. cukormentes napod!</strong><br>
+      🌾 Legyen ez a <strong>${lisztNext}. lisztmentes napod!</strong><br>
+      ⏱️ Böjt cél: <strong>16h+</strong> &nbsp;·&nbsp; Zsigeri zsír: <strong>${health.zsiger || 13} → ${(health.zsiger || 13) - 1}</strong>
+    `;
+
+    // Napirend
+    renderNapirend(getDayType());
+
+    // Last updated
+    document.getElementById('last-updated').textContent = `Utoljára frissítve: ${new Date().toLocaleTimeString('hu-HU')}`;
+
+    // Show dashboard
+    document.getElementById('loading').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    document.getElementById('dashboard').classList.add('fade-in');
+
+  } catch(err) {
+    document.getElementById('loading').innerHTML = `
+      <div class="error-box">
+        ⚠️ Hiba az adatok betöltésekor: ${err.message}<br><br>
+        <small>Ellenőrizd hogy a Notion Integration hozzá van-e rendelve az oldalhoz.</small>
+      </div>
+    `;
+    console.error(err);
+  }
+}
+
+function toggleMission() {
+  const el = document.getElementById('mission-extra');
+  const arrow = document.getElementById('mission-arrow');
+  el.classList.toggle('open');
+  arrow.classList.toggle('open');
+}
+
+function toggleSection(id, arrowId) {
+  document.getElementById(id).classList.toggle('open');
+  document.getElementById(arrowId).classList.toggle('open');
+}
+
+loadDashboard();
+</script>
+</body>
+</html>
