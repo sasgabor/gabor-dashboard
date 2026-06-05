@@ -454,7 +454,7 @@ footer {
 <script>
 // ─── CONFIG ──────────────────────────────────────────────────────────────────
 const PROXY    = 'https://notion-proxy.sasgabor-sg.workers.dev';
-const TOKEN    = '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';
+
 const DB_ID    = '976c01ccf3a84bbe88db142e6b0c1859'; // Iniciatívák & Projektek
 
 // ─── DÁTUM ───────────────────────────────────────────────────────────────────
@@ -534,7 +534,7 @@ async function loadData() {
     var res = await fetch(PROXY + '/notion/databases/' + DB_ID + '/query', {
       method: 'POST',
       headers: {
-        'Authorization': 'Bearer ' + TOKEN,
+
         'Notion-Version': '2022-06-28',
         'Content-Type': 'application/json',
       },
