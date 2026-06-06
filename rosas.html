@@ -3,570 +3,590 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Rosas Logisztikai – Belső Dashboard</title>
+<title>Rosas Dashboard</title>
 <style>
-:root {
-  --bg: #F5F3EE;
-  --surface: #FFFFFF;
-  --surface2: #EFEDE8;
-  --ink: #1A1917;
-  --ink2: #6B6860;
-  --ink3: #A09D97;
-  --accent: #1A3C2E;
-  --accent-light: #E8F0EC;
-  --amber: #B8651A;
-  --amber-light: #FDF0E4;
-  --coral: #B83A1A;
-  --coral-light: #FDEAE6;
-  --blue: #1A3A6E;
-  --blue-light: #E6EBF5;
-  --purple: #4A1A6E;
-  --purple-light: #F0E6FB;
-  --green: #1A5C2E;
-  --green-light: #E6F5EC;
-  --border: rgba(26,25,23,0.1);
-  --border-strong: rgba(26,25,23,0.18);
-  --serif: Georgia, 'Times New Roman', serif;
-  --sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Helvetica, Arial, sans-serif;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body { font-family: var(--sans); background: var(--bg); color: var(--ink); min-height: 100vh; }
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
 
-header {
-  background: var(--accent);
-  padding: 2rem 3rem;
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 2rem;
-}
-.header-left h1 {
-  font-family: var(--serif);
-  font-size: 2.2rem;
-  color: #fff;
-  letter-spacing: -0.02em;
-  line-height: 1.1;
-  font-weight: normal;
-}
-.header-left p {
-  font-size: 0.82rem;
-  color: rgba(255,255,255,0.5);
-  margin-top: 0.4rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-}
-.header-right { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; }
-.header-date { font-size: 0.8rem; color: rgba(255,255,255,0.4); white-space: nowrap; }
-.sync-status { font-size: 0.72rem; color: rgba(255,255,255,0.5); display: flex; align-items: center; gap: 5px; }
-.sync-dot { width: 6px; height: 6px; border-radius: 50%; background: #4CAF50; animation: pulse 2s infinite; }
-.sync-dot.loading { background: #FFA726; animation: pulse 0.8s infinite; }
-.sync-dot.error   { background: #EF5350; animation: none; }
-@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
+  :root {
+    --rose: #C0392B;
+    --rose-dark: #96281B;
+    --rose-light: #FADBD8;
+    --rose-pale: #FEF5F4;
+    --ink: #1A1A2E;
+    --ink-mid: #3D3D5C;
+    --ink-light: #7B7B9A;
+    --border: #E8E8F0;
+    --bg: #F7F7FB;
+    --white: #FFFFFF;
+    --green: #27AE60;
+    --green-bg: #EAFAF1;
+    --amber: #E67E22;
+    --amber-bg: #FEF9E7;
+    --blue: #2980B9;
+    --blue-bg: #EBF5FB;
+    --gray: #95A5A6;
+    --gray-bg: #F2F3F4;
+  }
 
-/* TENNIVALÓK SÁV */
-.top-tasks {
-  background: #162F24;
-  padding: 0.7rem 3rem;
-  display: flex;
-  gap: 2rem;
-  align-items: center;
-  flex-wrap: wrap;
-}
-.top-tasks-label {
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.35);
-  white-space: nowrap;
-}
-.top-task-item { display: flex; align-items: center; gap: 7px; font-size: 0.75rem; color: rgba(255,255,255,0.72); }
-.top-task-dot  { width: 5px; height: 5px; border-radius: 50%; flex-shrink: 0; }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
 
-main { max-width: 1160px; margin: 0 auto; padding: 2.5rem 2rem 4rem; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    min-height: 100vh;
+  }
 
-.section-label {
-  font-size: 0.7rem;
-  font-weight: 600;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--ink3);
-  margin-bottom: 1rem;
-  margin-top: 2.5rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.section-label:first-child { margin-top: 0; }
+  /* HEADER */
+  .header {
+    background: var(--ink);
+    padding: 0 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 64px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    color: var(--white);
+    font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.3px;
+  }
+  .logo-rose {
+    width: 32px; height: 32px;
+    background: var(--rose);
+    border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px;
+  }
+  .header-meta {
+    color: var(--ink-light);
+    font-size: 13px;
+    font-family: 'DM Mono', monospace;
+  }
 
-/* KPI */
-.kpi-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
-.kpi-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1.1rem 1.2rem;
-  position: relative;
-  overflow: hidden;
-}
-.kpi-card::after {
-  content: '';
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 3px;
-  background: var(--accent);
-  opacity: 0.2;
-}
-.kpi-num { font-family: var(--serif); font-size: 2.4rem; color: var(--ink); line-height: 1; font-weight: normal; }
-.kpi-num span { font-size: 0.95rem; font-family: var(--sans); color: var(--ink3); margin-left: 3px; }
-.kpi-num.loading-num { font-size: 1.4rem; color: var(--ink3); animation: shimmer 1.5s infinite; }
-@keyframes shimmer { 0%,100%{opacity:0.5} 50%{opacity:1} }
-.kpi-lbl { font-size: 0.77rem; color: var(--ink2); margin-top: 0.5rem; line-height: 1.35; }
+  /* PRIORITY STRIP */
+  .priority-strip {
+    background: linear-gradient(135deg, var(--rose) 0%, var(--rose-dark) 100%);
+    padding: 14px 32px;
+    display: flex;
+    align-items: center;
+    gap: 24px;
+  }
+  .priority-label {
+    color: rgba(255,255,255,0.7);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .priority-items {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .priority-item {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 6px;
+    padding: 6px 14px;
+    color: white;
+    font-size: 13px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .priority-item .num {
+    background: rgba(255,255,255,0.25);
+    border-radius: 4px;
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+    font-weight: 700;
+  }
 
-/* WIKI STÁTUSZ */
-.wiki-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.wiki-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1rem 1.2rem; }
-.wiki-card-title { font-size: 0.82rem; font-weight: 600; color: var(--ink); margin-bottom: 0.7rem; }
-.wiki-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.76rem;
-  color: var(--ink2);
-  padding: 4px 0;
-  border-bottom: 1px solid var(--border);
-}
-.wiki-row:last-child { border-bottom: none; }
-.wiki-status { font-size: 0.68rem; font-weight: 600; padding: 2px 8px; border-radius: 99px; }
-.ws-done    { background: var(--green-light);  color: var(--green); }
-.ws-wait    { background: var(--amber-light);  color: var(--amber); }
-.ws-missing { background: var(--coral-light);  color: var(--coral); }
-.ws-inprog  { background: var(--blue-light);   color: var(--blue);  }
+  /* MAIN LAYOUT */
+  .main {
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 28px 32px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
 
-/* PROJEKTEK – 3 oszlop */
-.projects-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 12px; align-items: start; }
-.projects-col  { display: flex; flex-direction: column; gap: 8px; }
-.col-header {
-  font-size: 0.72rem;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink3);
-  padding: 4px 2px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.col-dot { width: 7px; height: 7px; border-radius: 50%; }
+  .full-width { grid-column: 1 / -1; }
 
-.project-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  padding: 1rem 1.1rem;
-  transition: border-color 0.15s;
-}
-.project-card:hover { border-color: var(--border-strong); }
-.project-card.card-done { border-left: 3px solid var(--green); }
+  /* SECTION HEADER */
+  .section-title {
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--ink-light);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-title::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
 
-.project-name  { font-size: 0.87rem; color: var(--ink); line-height: 1.4; font-weight: 500; margin-bottom: 8px; }
-.project-meta  { display: flex; flex-wrap: wrap; gap: 5px; align-items: center; }
+  /* CARDS */
+  .card {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+  }
+  .card-header {
+    padding: 18px 20px 14px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .card-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-body { padding: 16px 20px; }
 
-.badge { display: inline-block; font-size: 0.67rem; padding: 2px 8px; border-radius: 99px; font-weight: 600; letter-spacing: 0.02em; }
-.badge-folyamatban { background: #FFF8E1; color: #B8651A; }
-.badge-kesz        { background: var(--green-light); color: var(--green); }
-.badge-blokkolt    { background: var(--coral-light); color: var(--coral); }
-.badge-nem-kezdett { background: var(--surface2); color: var(--ink3); }
-.badge-belso       { background: var(--blue-light); color: var(--blue); }
-.badge-marketing   { background: var(--purple-light); color: var(--purple); }
-.badge-ugyfel      { background: var(--amber-light); color: var(--amber); }
-.badge-magas       { background: var(--green-light); color: var(--green); }
-.badge-kozepes     { background: var(--amber-light); color: var(--amber); }
-.badge-alacsony    { background: var(--surface2); color: var(--ink3); }
-.badge-alap        { background: var(--surface2); color: var(--ink3); }
+  /* WIKI STATUS GRID */
+  .wiki-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 0;
+  }
+  .wiki-card {
+    padding: 20px;
+    border-right: 1px solid var(--border);
+    position: relative;
+  }
+  .wiki-card:last-child { border-right: none; }
+  .wiki-name {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink-mid);
+    margin-bottom: 12px;
+  }
+  .wiki-progress {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    margin-bottom: 12px;
+    overflow: hidden;
+  }
+  .wiki-progress-fill {
+    height: 100%;
+    border-radius: 2px;
+    transition: width 0.6s ease;
+  }
+  .wiki-items { display: flex; flex-direction: column; gap: 6px; }
+  .wiki-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--ink-mid);
+  }
+  .wiki-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-done { background: var(--green); }
+  .dot-progress { background: var(--amber); }
+  .dot-missing { background: var(--border); border: 1.5px solid var(--gray); }
 
-.project-deadline { font-size: 0.67rem; color: var(--ink3); margin-left: auto; }
+  /* PROJECTS */
+  .projects-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+  .project-col {
+    border-right: 1px solid var(--border);
+    min-height: 200px;
+  }
+  .project-col:last-child { border-right: none; }
+  .project-col-header {
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--border);
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .col-in-progress .project-col-header { color: var(--amber); background: var(--amber-bg); }
+  .col-done .project-col-header { color: var(--green); background: var(--green-bg); }
+  .col-parked .project-col-header { color: var(--gray); background: var(--gray-bg); }
+  .project-col-body { padding: 12px; display: flex; flex-direction: column; gap: 8px; }
 
-/* SKELETON */
-.skeleton {
-  background: linear-gradient(90deg, var(--surface2) 25%, var(--surface) 50%, var(--surface2) 75%);
-  background-size: 200% 100%;
-  animation: skeleton-load 1.5s infinite;
-  border-radius: 6px;
-  height: 14px;
-  margin-bottom: 6px;
-}
-@keyframes skeleton-load { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+  .project-item {
+    background: var(--bg);
+    border-radius: 8px;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+  }
+  .project-item-title {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 4px;
+    line-height: 1.4;
+  }
+  .project-item-meta {
+    font-size: 11px;
+    color: var(--ink-light);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
 
-/* PROGRESS */
-.progress-section {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 14px;
-  padding: 1.2rem 1.4rem;
-  margin-top: 12px;
-}
-.progress-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 0.8rem; }
-.progress-header p { font-size: 0.78rem; color: var(--ink2); }
-.progress-header strong { font-size: 0.78rem; color: var(--ink); }
-.bar-track { height: 6px; background: var(--surface2); border-radius: 99px; overflow: hidden; }
-.bar-fill  { height: 100%; border-radius: 99px; background: var(--accent); transition: width 0.8s ease; }
-.chips     { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 0.9rem; }
-.chip      { font-size: 0.7rem; padding: 3px 10px; border-radius: 99px; border: 1px solid var(--border-strong); color: var(--ink2); }
+  /* DONE NOTE */
+  .done-note {
+    background: var(--green-bg);
+    border: 1px solid #A9DFBF;
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 12px;
+    font-size: 11px;
+    color: #1E8449;
+    line-height: 1.5;
+  }
 
-.error-box {
-  background: var(--coral-light);
-  border: 1px solid rgba(184,58,26,0.2);
-  border-radius: 10px;
-  padding: 1rem 1.2rem;
-  font-size: 0.82rem;
-  color: var(--coral);
-  margin-bottom: 1rem;
-  display: none;
-}
+  /* BADGES */
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 4px;
+    padding: 2px 7px;
+    font-size: 10px;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-green { background: var(--green-bg); color: var(--green); }
+  .badge-amber { background: var(--amber-bg); color: var(--amber); }
+  .badge-blue { background: var(--blue-bg); color: var(--blue); }
+  .badge-gray { background: var(--gray-bg); color: var(--gray); }
+  .badge-rose { background: var(--rose-light); color: var(--rose-dark); }
 
-footer {
-  text-align: center;
-  padding: 1.5rem;
-  font-size: 0.7rem;
-  color: var(--ink3);
-  letter-spacing: 0.05em;
-  border-top: 1px solid var(--border);
-  margin-top: 2rem;
-}
+  /* NEXT STEPS */
+  .next-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+  .next-item {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 14px;
+    background: var(--bg);
+    border-radius: 8px;
+    border: 1px solid var(--border);
+  }
+  .next-num {
+    width: 28px; height: 28px;
+    background: var(--rose);
+    color: white;
+    border-radius: 7px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .next-text { font-size: 13px; color: var(--ink-mid); line-height: 1.5; }
+  .next-text strong { color: var(--ink); font-weight: 600; }
 
-@media (max-width: 900px) {
-  .projects-grid { grid-template-columns: 1fr 1fr; }
-  .wiki-grid { grid-template-columns: 1fr; }
-}
-@media (max-width: 600px) {
-  .kpi-row { grid-template-columns: 1fr 1fr; }
-  .projects-grid { grid-template-columns: 1fr; }
-  header { flex-direction: column; align-items: flex-start; padding: 1.5rem; }
-  .top-tasks { padding: 0.7rem 1.5rem; gap: 1rem; }
-  main { padding: 1.5rem 1rem 3rem; }
-}
+  /* LOADING */
+  .loading {
+    display: flex; align-items: center; justify-content: center;
+    padding: 32px; color: var(--ink-light); font-size: 13px; gap: 10px;
+  }
+  .spinner {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-top-color: var(--rose);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ERROR */
+  .error-note {
+    background: var(--rose-pale);
+    border: 1px solid var(--rose-light);
+    border-radius: 8px;
+    padding: 10px 14px;
+    margin: 12px;
+    font-size: 12px;
+    color: var(--rose-dark);
+  }
+
+  /* FOOTER */
+  .footer {
+    text-align: center;
+    padding: 20px;
+    color: var(--ink-light);
+    font-size: 11px;
+    font-family: 'DM Mono', monospace;
+    border-top: 1px solid var(--border);
+    margin-top: 8px;
+  }
+
+  @media (max-width: 900px) {
+    .main { grid-template-columns: 1fr; padding: 16px; }
+    .wiki-grid { grid-template-columns: repeat(2, 1fr); }
+    .projects-grid { grid-template-columns: 1fr; }
+    .next-grid { grid-template-columns: 1fr; }
+    .priority-strip { flex-wrap: wrap; }
+  }
 </style>
 </head>
 <body>
 
-<header>
-  <div class="header-left">
-    <h1>Rosas Logisztikai</h1>
-    <p>Belső operatív dashboard</p>
+<div class="header">
+  <div class="logo">
+    <div class="logo-rose">🌹</div>
+    Rosas Logisztikai Kft.
   </div>
-  <div class="header-right">
-    <div class="header-date" id="hdate"></div>
-    <div class="sync-status">
-      <div class="sync-dot loading" id="sync-dot"></div>
-      <span id="sync-label">Notion betöltése...</span>
-    </div>
-  </div>
-</header>
+  <div class="header-meta" id="lastUpdate">Frissítve: 2026.06.06.</div>
+</div>
 
-<div class="top-tasks">
-  <span class="top-tasks-label">🔥 Top prioritás</span>
-  <div class="top-task-item">
-    <div class="top-task-dot" style="background:#FFA726"></div>
-    Import AI ág felépítése (export kész)
-  </div>
-  <div class="top-task-item">
-    <div class="top-task-dot" style="background:#FFA726"></div>
-    2024–2025 főkönyvi kivonat feltöltése → KPI rendszer
-  </div>
-  <div class="top-task-item">
-    <div class="top-task-dot" style="background:#FFA726"></div>
-    58 csali letöltő email sorozat elindítása
+<div class="priority-strip">
+  <div class="priority-label">Top prioritás</div>
+  <div class="priority-items">
+    <div class="priority-item"><span class="num">1</span> Import AI ág felépítése</div>
+    <div class="priority-item"><span class="num">2</span> 2024–2025 főkönyv feltöltése → KPI</div>
+    <div class="priority-item"><span class="num">3</span> 58 csali letöltő email sorozat</div>
   </div>
 </div>
 
-<main>
+<div class="main">
 
-  <div class="error-box" id="error-box">
-    ⚠️ Nem sikerült betölteni a Notion adatokat. Ellenőrizd az internetkapcsolatot, vagy próbáld újra később.
-  </div>
+  <!-- WIKI STATUS -->
+  <div class="full-width">
+    <div class="section-title">Wiki & Tudásbázis státusz</div>
+    <div class="card">
+      <div class="wiki-grid">
 
-  <p class="section-label">Projektek összesítő</p>
-  <div class="kpi-row">
-    <div class="kpi-card">
-      <div class="kpi-num" id="kpi-osszes"><span class="loading-num">···</span></div>
-      <div class="kpi-lbl">Összes projekt</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-num" id="kpi-folyamatban"><span class="loading-num">···</span></div>
-      <div class="kpi-lbl">Folyamatban</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-num" id="kpi-kesz"><span class="loading-num">···</span></div>
-      <div class="kpi-lbl">Kész</div>
-    </div>
-    <div class="kpi-card">
-      <div class="kpi-num" id="kpi-magas"><span class="loading-num">···</span></div>
-      <div class="kpi-lbl">Magas profit hatású</div>
-    </div>
-  </div>
+        <div class="wiki-card">
+          <div class="wiki-name">📋 Vámkezelés</div>
+          <div class="wiki-progress"><div class="wiki-progress-fill" style="width:70%;background:var(--green)"></div></div>
+          <div class="wiki-items">
+            <div class="wiki-item"><span class="wiki-dot dot-done"></span>Márka hang, árazás, csapat</div>
+            <div class="wiki-item"><span class="wiki-dot dot-done"></span>Folyamatleírások + Metaadat</div>
+            <div class="wiki-item"><span class="wiki-dot dot-progress"></span>Kérdőív kiküldve (Varga Cs., HJ)</div>
+            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>Mély ügyfél-szemszögű leírás</div>
+          </div>
+        </div>
 
-  <p class="section-label">Wiki & Tudásbázis státusz</p>
-  <div class="wiki-grid">
-    <div class="wiki-card">
-      <div class="wiki-card-title">🛃 Vámkezelés termékismertető</div>
-      <div class="wiki-row"><span>Csapat válaszai (HJ, KSZ, SG)</span><span class="wiki-status ws-done">✅ Kész</span></div>
-      <div class="wiki-row"><span>Márka hang, ICP, versenytársak</span><span class="wiki-status ws-done">✅ Kész</span></div>
-      <div class="wiki-row"><span>Folyamatleírások & Metaadat Excel</span><span class="wiki-status ws-done">✅ Kész</span></div>
-      <div class="wiki-row"><span>20 szekciós kérdőív kiküldve</span><span class="wiki-status ws-inprog">🔄 Folyamatban</span></div>
-      <div class="wiki-row"><span>Mély termékismertető (ügyfél szemszöge)</span><span class="wiki-status ws-missing">❌ Hiányzik</span></div>
-    </div>
-    <div class="wiki-card">
-      <div class="wiki-card-title">🚚 Szállítmányozás (SPED) termékismertető</div>
-      <div class="wiki-row"><span>Csapat válaszai</span><span class="wiki-status ws-done">✅ Kész</span></div>
-      <div class="wiki-row"><span>Folyamatleírások & fuvarelágazások</span><span class="wiki-status ws-done">✅ Kész</span></div>
-      <div class="wiki-row"><span>20 szekciós kérdőív kiküldve</span><span class="wiki-status ws-inprog">🔄 Folyamatban</span></div>
-      <div class="wiki-row"><span>Mély termékismertető (ügyfél szemszöge)</span><span class="wiki-status ws-missing">❌ Hiányzik</span></div>
-      <div class="wiki-row"><span>SPED AI ág tesztelése (Albitz Vivien)</span><span class="wiki-status ws-missing">❌ Hiányzik</span></div>
-    </div>
-    <div class="wiki-card">
-      <div class="wiki-card-title">📊 Profit & KPI rendszer</div>
-      <div class="wiki-row"><span>KPI rendszer létrehozva (havi + heti)</span><span class="wiki-status ws-done">✅ Kész</span></div>
-      <div class="wiki-row"><span>Top 5 nyereségnövelő prioritás dokumentálva</span><span class="wiki-status ws-done">✅ Kész</span></div>
-      <div class="wiki-row"><span>2024–2025 főkönyvi adatok feltöltve</span><span class="wiki-status ws-missing">❌ Hiányzik</span></div>
-      <div class="wiki-row"><span>Küszöbszámok véglegesítve</span><span class="wiki-status ws-missing">❌ Hiányzik</span></div>
-    </div>
-    <div class="wiki-card">
-      <div class="wiki-card-title">🤖 AI Ajánlatautomatizálás</div>
-      <div class="wiki-row"><span>Export ág</span><span class="wiki-status ws-done">✅ Kész</span></div>
-      <div class="wiki-row"><span>Import ág</span><span class="wiki-status ws-inprog">🔄 Következő</span></div>
-      <div class="wiki-row"><span>SPED ág (tervezet kész)</span><span class="wiki-status ws-wait">⏳ Várakozik</span></div>
-      <div class="wiki-row"><span>58 csali letöltő email sorozat</span><span class="wiki-status ws-missing">❌ Nem indult</span></div>
-    </div>
-  </div>
+        <div class="wiki-card">
+          <div class="wiki-name">🚛 SPED</div>
+          <div class="wiki-progress"><div class="wiki-progress-fill" style="width:50%;background:var(--amber)"></div></div>
+          <div class="wiki-items">
+            <div class="wiki-item"><span class="wiki-dot dot-done"></span>Alap struktúra kész</div>
+            <div class="wiki-item"><span class="wiki-dot dot-progress"></span>Kérdőív kiküldve (Albitz V., Csortos B.)</div>
+            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>Mély leírás és ellenvetések</div>
+            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>ADR/IMO/IATA protokoll</div>
+          </div>
+        </div>
 
-  <p class="section-label">Projektek & Iniciatívák</p>
+        <div class="wiki-card">
+          <div class="wiki-name">📊 Profit & KPI</div>
+          <div class="wiki-progress"><div class="wiki-progress-fill" style="width:40%;background:var(--amber)"></div></div>
+          <div class="wiki-items">
+            <div class="wiki-item"><span class="wiki-dot dot-done"></span>KPI rendszer létrehozva</div>
+            <div class="wiki-item"><span class="wiki-dot dot-done"></span>Heti + havi KPI-ok definiálva</div>
+            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>2024–2025 főkönyvi adatok</div>
+            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>Veszélyjelző küszöbök kitöltve</div>
+          </div>
+        </div>
 
-  <div class="projects-grid">
-    <div class="projects-col">
-      <div class="col-header">
-        <div class="col-dot" style="background:var(--amber)"></div>
-        Folyamatban
-      </div>
-      <div id="col-folyamatban">
-        <div class="project-card"><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></div>
-        <div class="project-card"><div class="skeleton"></div><div class="skeleton" style="width:75%"></div></div>
-      </div>
-    </div>
-    <div class="projects-col">
-      <div class="col-header">
-        <div class="col-dot" style="background:var(--green)"></div>
-        Elvégzett fejlesztések ✅
-      </div>
-      <div id="col-kesz">
-        <div class="project-card"><div class="skeleton"></div><div class="skeleton" style="width:60%"></div></div>
-        <div class="project-card"><div class="skeleton"></div><div class="skeleton" style="width:70%"></div></div>
-      </div>
-    </div>
-    <div class="projects-col">
-      <div class="col-header">
-        <div class="col-dot" style="background:var(--ink3)"></div>
-        Nem kezdett / Parkoló
-      </div>
-      <div id="col-nem-kezdett">
-        <div class="project-card"><div class="skeleton"></div><div class="skeleton" style="width:65%"></div></div>
-        <div class="project-card"><div class="skeleton"></div><div class="skeleton" style="width:50%"></div></div>
+        <div class="wiki-card">
+          <div class="wiki-name">🤖 AI automatizálás</div>
+          <div class="wiki-progress"><div class="wiki-progress-fill" style="width:35%;background:var(--rose)"></div></div>
+          <div class="wiki-items">
+            <div class="wiki-item"><span class="wiki-dot dot-done"></span>Export ág kész (Gmail → IMAP csere folyamatban)</div>
+            <div class="wiki-item"><span class="wiki-dot dot-progress"></span>IMAP kapcsolat beállítása</div>
+            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>Import ág felépítése</div>
+            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>SPED ág tesztelése</div>
+          </div>
+        </div>
+
       </div>
     </div>
   </div>
 
-  <div class="progress-section" id="progress-section" style="display:none">
-    <div class="progress-header">
-      <p id="progress-label-text">Haladás</p>
-      <strong id="progress-fraction"></strong>
+  <!-- PROJECTS -->
+  <div class="full-width">
+    <div class="section-title">Projektek & Iniciatívák</div>
+    <div class="card">
+      <div class="projects-grid">
+
+        <div class="project-col col-in-progress">
+          <div class="project-col-header">🔄 Folyamatban</div>
+          <div class="project-col-body" id="in-progress-col">
+            <div class="loading"><div class="spinner"></div> Betöltés...</div>
+          </div>
+        </div>
+
+        <div class="project-col col-done">
+          <div class="project-col-header">✅ Elvégzett fejlesztések</div>
+          <div class="project-col-body" id="done-col">
+            <div class="done-note">
+              ℹ️ A projekt-követés <strong>2026.06.05. 19:00-tól</strong> indul a Notion adatbázisban. Az előtte elvégzett fejlesztések a Notion Wikiben és a rendszerpromptban vannak dokumentálva.
+            </div>
+          </div>
+        </div>
+
+        <div class="project-col col-parked">
+          <div class="project-col-header">⏸ Nem kezdett / Parkoló</div>
+          <div class="project-col-body" id="parked-col">
+            <div class="loading"><div class="spinner"></div> Betöltés...</div>
+          </div>
+        </div>
+
+      </div>
     </div>
-    <div class="bar-track">
-      <div class="bar-fill" id="bar-fill" style="width:0%"></div>
-    </div>
-    <div class="chips" id="chips-row"></div>
   </div>
 
-</main>
+  <!-- NEXT STEPS -->
+  <div class="full-width">
+    <div class="section-title">Következő lépések</div>
+    <div class="card card-body">
+      <div class="next-grid">
+        <div class="next-item">
+          <div class="next-num">1</div>
+          <div class="next-text"><strong>IMAP kapcsolat beállítása Make.com-ban</strong> – Gmail modul cseréje az ajanlat1@rosas-group.com IMAP triggerre az AI export ágban.</div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">2</div>
+          <div class="next-text"><strong>Import AI ág felépítése</strong> – az export ág mintájára. Bevonandó: Pető Niki (adatmezők egyeztetése).</div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">3</div>
+          <div class="next-text"><strong>2024–2025 főkönyvi kivonat feltöltése</strong> – KPI rendszer kitöltéséhez szükséges. Felelős: Kleiner Szilvia.</div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">4</div>
+          <div class="next-text"><strong>58 csali letöltő email sorozat indítása</strong> – SalesAutopilot vagy Make.com alapú sorozat. Bevonandó: Kaplonyi Aranka.</div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">5</div>
+          <div class="next-text"><strong>Termékismertető kérdőívek visszaérkezése</strong> – Varga Cs., HJ, Albitz V., Csortos B. Claude feldolgozza és Wiki-be integrálja.</div>
+        </div>
+        <div class="next-item">
+          <div class="next-num">6</div>
+          <div class="next-text"><strong>Ügyfelek feltöltése Machi export alapján</strong> – CRM adatbázis feltöltése. Felelős: Sas Gábor.</div>
+        </div>
+      </div>
+    </div>
+  </div>
 
-<footer>
-  Rosas Logisztikai Kft. &nbsp;·&nbsp; Csak belső használatra &nbsp;·&nbsp; Az adatok forrása: Notion
-</footer>
+</div>
+
+<div class="footer">
+  Rosas Logisztikai Kft. · Belső dashboard · <span id="footerDate"></span>
+</div>
 
 <script>
 const PROXY = 'https://notion-proxy.sasgabor-sg.workers.dev';
 const DB_ID = '220313732c03462d8332b860d0dd87e3';
 
-var d = new Date();
-var months = ['január','február','március','április','május','június',
-              'július','augusztus','szeptember','október','november','december'];
-document.getElementById('hdate').textContent =
-  d.getFullYear() + '. ' + months[d.getMonth()] + ' ' + d.getDate() + '.';
+const PILLAR_COLORS = {
+  'Belső folyamatok': 'badge-blue',
+  'Marketing': 'badge-rose',
+  'Ügyfél-profitabilitás': 'badge-amber',
+};
 
-function statusBadge(s) {
-  if (!s) return '';
-  const map = {
-    'Folyamatban': 'badge-folyamatban',
-    'Kész':        'badge-kesz',
-    'Blokkolt':    'badge-blokkolt',
-    'Nem kezdett': 'badge-nem-kezdett',
-  };
-  return '<span class="badge ' + (map[s]||'badge-nem-kezdett') + '">' + s + '</span>';
+function badge(text, cls) {
+  return `<span class="badge ${cls}">${text}</span>`;
 }
 
-function pillerBadge(p) {
-  if (!p) return '';
-  const map = {
-    'Belső folyamatok':      'badge-belso',
-    'Marketing':             'badge-marketing',
-    'Ügyfél-profitabilitás': 'badge-ugyfel',
-  };
-  return '<span class="badge ' + (map[p]||'badge-alap') + '">' + p + '</span>';
+function projectCard(p) {
+  const props = p.properties;
+  const title = props['Neve']?.title?.[0]?.plain_text || '–';
+  const felelős = props['Felelős']?.rich_text?.[0]?.plain_text || '';
+  const pillér = props['Pillér']?.select?.name || '';
+  const határ = props['Határidő']?.date?.start || '';
+  const pillarCls = PILLAR_COLORS[pillér] || 'badge-gray';
+
+  let meta = [];
+  if (felelős) meta.push(felelős);
+  if (határ) meta.push('⏱ ' + határ);
+
+  return `
+    <div class="project-item">
+      <div class="project-item-title">${title}</div>
+      <div class="project-item-meta">
+        ${pillér ? badge(pillér, pillarCls) : ''}
+        ${meta.map(m => `<span>${m}</span>`).join('')}
+      </div>
+    </div>`;
 }
 
-function profitBadge(p) {
-  if (!p) return '';
-  const map = {
-    'Magas':        'badge-magas',
-    'Közepes':      'badge-kozepes',
-    'Alacsony':     'badge-alacsony',
-    'Alapfeltétel': 'badge-alap',
-  };
-  return '<span class="badge ' + (map[p]||'badge-alap') + '">' + p + '</span>';
-}
-
-function deadlineStr(iso) {
-  if (!iso) return '';
-  var parts = iso.split('-');
-  return parts[1] + '.' + parts[2] + '.';
-}
-
-function projectCard(item, done) {
-  var props    = item.properties || {};
-  var name     = props['Neve']         || '(névtelen)';
-  var status   = props['Státusz']      || '';
-  var piller   = props['Pillér']       || '';
-  var profit   = props['Profit hatás'] || '';
-  var deadline = props['Határidő']     || '';
-
-  return '<div class="project-card' + (done ? ' card-done' : '') + '">'
-    + '<div class="project-name">' + name + '</div>'
-    + '<div class="project-meta">'
-    + statusBadge(status)
-    + pillerBadge(piller)
-    + profitBadge(profit)
-    + (deadline ? '<span class="project-deadline">⏱ ' + deadlineStr(deadline) + '</span>' : '')
-    + '</div></div>';
-}
-
-async function loadData() {
-  var dot   = document.getElementById('sync-dot');
-  var label = document.getElementById('sync-label');
-  dot.className = 'sync-dot loading';
-  label.textContent = 'Notion betöltése...';
-
+async function loadProjects() {
   try {
-    var res = await fetch(PROXY + '/notion/databases/' + DB_ID + '/query', {
+    const res = await fetch(PROXY + '/notion/databases/' + DB_ID + '/query', {
       method: 'POST',
-      headers: {
-        'Notion-Version': '2022-06-28',
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ page_size: 100, sorts: [{ property: 'Státusz', direction: 'ascending' }] })
+      headers: { 'Content-Type': 'application/json', 'Notion-Version': '2022-06-28' },
+      body: JSON.stringify({ page_size: 50 })
+    });
+    const data = await res.json();
+    const pages = data.results || [];
+
+    const inProgress = pages.filter(p => p.properties['Státusz']?.select?.name === 'Folyamatban');
+    const done = pages.filter(p => p.properties['Státusz']?.select?.name === 'Kész');
+    const parked = pages.filter(p => {
+      const s = p.properties['Státusz']?.select?.name;
+      return s === 'Nem kezdett' || s === 'Blokkolt';
     });
 
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    var data = await res.json();
-    var items = (data.results || []).map(parseItem);
-    render(items);
+    const ipCol = document.getElementById('in-progress-col');
+    ipCol.innerHTML = inProgress.length ? inProgress.map(projectCard).join('') : '<div style="padding:16px;color:var(--ink-light);font-size:12px;">Nincs aktív projekt</div>';
 
-    dot.className = 'sync-dot';
-    label.textContent = 'Szinkronizálva ' + new Date().toLocaleTimeString('hu-HU', {hour:'2-digit', minute:'2-digit'});
+    const doneCol = document.getElementById('done-col');
+    const doneNote = `<div class="done-note">ℹ️ A projekt-követés <strong>2026.06.05. 19:00-tól</strong> indul a Notion adatbázisban. Az előtte elvégzett fejlesztések a Notion Wikiben és a rendszerpromptban vannak dokumentálva.</div>`;
+    doneCol.innerHTML = doneNote + (done.length ? done.map(projectCard).join('') : '');
 
-  } catch (err) {
-    dot.className = 'sync-dot error';
-    label.textContent = 'Betöltési hiba';
-    document.getElementById('error-box').style.display = 'block';
-    console.error(err);
-  }
-}
+    const parkedCol = document.getElementById('parked-col');
+    parkedCol.innerHTML = parked.length ? parked.map(projectCard).join('') : '<div style="padding:16px;color:var(--ink-light);font-size:12px;">Nincs parkoló projekt</div>';
 
-function parseItem(page) {
-  var p = page.properties || {};
-  function txt(prop) {
-    if (!prop) return '';
-    if (prop.type === 'title')      return (prop.title     || []).map(function(r){return r.plain_text||'';}).join('');
-    if (prop.type === 'rich_text')  return (prop.rich_text || []).map(function(r){return r.plain_text||'';}).join('');
-    if (prop.type === 'select')     return prop.select ? prop.select.name : '';
-    if (prop.type === 'date')       return prop.date ? prop.date.start : '';
-    return '';
-  }
-  return {
-    id: page.id,
-    properties: {
-      'Neve':         txt(p['Neve']),
-      'Státusz':      txt(p['Státusz']),
-      'Pillér':       txt(p['Pillér']),
-      'Profit hatás': txt(p['Profit hatás']),
-      'Fázis':        txt(p['Fázis']),
-      'Határidő':     txt(p['Határidő']),
-      'Felelős':      txt(p['Felelős']),
-    }
-  };
-}
-
-function render(items) {
-  var osszes      = items.length;
-  var folyamatban = items.filter(function(i){ return i.properties['Státusz'] === 'Folyamatban'; }).length;
-  var kesz        = items.filter(function(i){ return i.properties['Státusz'] === 'Kész'; }).length;
-  var magas       = items.filter(function(i){ return i.properties['Profit hatás'] === 'Magas'; }).length;
-
-  document.getElementById('kpi-osszes').innerHTML      = osszes      + '<span>db</span>';
-  document.getElementById('kpi-folyamatban').innerHTML = folyamatban + '<span>db</span>';
-  document.getElementById('kpi-kesz').innerHTML        = kesz        + '<span>db</span>';
-  document.getElementById('kpi-magas').innerHTML       = magas       + '<span>db</span>';
-
-  var folItems  = items.filter(function(i){ return i.properties['Státusz'] === 'Folyamatban'; });
-  var keszItems = items.filter(function(i){ return i.properties['Státusz'] === 'Kész'; });
-  var nemItems  = items.filter(function(i){ return i.properties['Státusz'] === 'Nem kezdett'; });
-  var blokItems = items.filter(function(i){ return i.properties['Státusz'] === 'Blokkolt'; });
-
-  document.getElementById('col-folyamatban').innerHTML = folItems.length
-    ? folItems.map(function(i){ return projectCard(i, false); }).join('')
-    : '<div class="project-card" style="color:var(--ink3);font-size:0.82rem;">Nincs folyamatban lévő projekt.</div>';
-
-  var keszHtml = '<div class="project-card" style="border-left:3px solid var(--ink3);margin-bottom:4px;">'
-    + '<div style="font-size:0.75rem;color:var(--ink3);line-height:1.5;">'
-    + '📌 <strong style="color:var(--ink2);">2026.06.05. 19:00 előtt</strong> elvégzett fejlesztések itt nem szerepelnek – '
-    + 'a projekt-követés ettől az időponttól indul. Az elvégzett munkák a Notion Wiki-ben és a rendszerpromptban dokumentáltak.'
-    + '</div></div>';
-  document.getElementById('col-kesz').innerHTML = keszHtml + (keszItems.length
-    ? keszItems.map(function(i){ return projectCard(i, true); }).join('')
-    : '');
-
-  var rightItems = nemItems.concat(blokItems);
-  document.getElementById('col-nem-kezdett').innerHTML = rightItems.length
-    ? rightItems.map(function(i){ return projectCard(i, false); }).join('')
-    : '<div class="project-card" style="color:var(--ink3);font-size:0.82rem;">Minden projekt elindult.</div>';
-
-  if (osszes > 0) {
-    var pct = Math.round(kesz / osszes * 100);
-    document.getElementById('bar-fill').style.width = pct + '%';
-    document.getElementById('progress-fraction').textContent = kesz + ' / ' + osszes + ' kész';
-    document.getElementById('progress-label-text').textContent = 'Projektek haladása – ' + pct + '%';
-
-    var pillerCounts = {};
-    items.forEach(function(i) {
-      var pl = i.properties['Pillér'] || 'Egyéb';
-      pillerCounts[pl] = (pillerCounts[pl] || 0) + 1;
+  } catch (e) {
+    ['in-progress-col','done-col','parked-col'].forEach(id => {
+      const el = document.getElementById(id);
+      if (el && el.querySelector('.loading')) {
+        el.innerHTML = `<div class="error-note">Nem sikerült betölteni a Notion adatokat.</div>`;
+      }
     });
-    document.getElementById('chips-row').innerHTML = Object.keys(pillerCounts).map(function(k){
-      return '<span class="chip">' + k + ' · ' + pillerCounts[k] + ' projekt</span>';
-    }).join('');
-    document.getElementById('progress-section').style.display = 'block';
   }
 }
 
-loadData();
+document.getElementById('footerDate').textContent = new Date().toLocaleDateString('hu-HU');
+loadProjects();
 </script>
 </body>
 </html>
