@@ -301,7 +301,7 @@ function parseCounters(blocks) {
   for (const block of blocks) {
     const text = extractText(block);
 
-    if (text.includes('Számlálók') || text.includes('szamlalok') || text.includes('SZÁMLÁLÓK')) {
+    if (text.includes('Számlálók') || text.includes('SZÁMLÁLÓK')) {
       inCounters = true;
     }
 
@@ -328,63 +328,61 @@ function parseHealthData(blocks) {
   for (const block of blocks) {
     const text = extractText(block);
 
-    // Feelfit data
-    if (text.match(/Testsúly|Testsuly/i)) {
+    if (text.match(/Testsúly|Testsuly/i) && !data.suly) {
       const m = text.match(/(\d+[\.,]\d+)\s*kg/);
       if (m) data.suly = parseFloat(m[1].replace(',','.'));
       const dm = text.match(/(\d{4}\.\d{2}\.\d{2})/);
-      if (dm) data.feelfit_date = dm[1];
+      if (dm && !data.feelfit_date) data.feelfit_date = dm[1];
     }
-    if (text.match(/Zsigeri zsír|Zsigeri zsir/i)) {
-      const m = text.match(/:\s*(\d+)/);
+    if (text.match(/Zsigeri zsír|Zsigeri zsir/i) && !data.zsiger) {
+      // table cell: "13" or "Zsigeri zsír | 13"
+      const m = text.match(/(\d+)/);
       if (m) data.zsiger = parseInt(m[1]);
     }
-    if (text.match(/Testzsír%|Testzsir%/i)) {
+    if (text.match(/Testzsír%|Testzsir%/i) && !data.testzsir) {
       const m = text.match(/(\d+[\.,]\d+)%/);
       if (m) data.testzsir = parseFloat(m[1].replace(',','.'));
     }
-    if (text.match(/Izomtömeg|Izomtomeg/i)) {
+    if (text.match(/Izomtömeg|Izomtomeg/i) && !data.izom) {
       const m = text.match(/(\d+[\.,]?\d*)\s*kg/);
       if (m) data.izom = parseFloat(m[1].replace(',','.'));
     }
-    if (text.match(/Protein/i)) {
+    if (text.match(/Protein%/i) && !data.protein) {
       const m = text.match(/(\d+[\.,]\d+)%/);
       if (m) data.protein = parseFloat(m[1].replace(',','.'));
     }
-    if (text.match(/BMR/i)) {
-      const m = text.match(/(\d+)\s*kcal/);
+    if (text.match(/BMR/i) && !data.bmr) {
+      const m = text.match(/(\d{3,4})\s*kcal/);
       if (m) data.bmr = parseInt(m[1]);
     }
-
-    // Garmin data
-    if (text.match(/Ny\.\s*pulzus|Nyugalmi pulzus/i)) {
+    if (text.match(/Ny\.\s*pulzus|Nyugalmi pulzus/i) && !data.pulzus) {
       const m = text.match(/(\d+)\s*bpm/);
       if (m) data.pulzus = parseInt(m[1]);
       const dm = text.match(/(\d{4}\.\d{2}\.\d{2})/);
-      if (dm) data.garmin_date = dm[1];
+      if (dm && !data.garmin_date) data.garmin_date = dm[1];
     }
-    if (text.match(/HRV 7 napos/i)) {
-      const m = text.match(/:\s*(\d+[\.,]?\d*)/);
-      if (m) data.hrv = parseFloat(m[1].replace(',','.'));
+    if (text.match(/HRV 7 napos/i) && !data.hrv) {
+      const m = text.match(/(\d+[\.,]?\d*)/g);
+      if (m && m.length) data.hrv = parseFloat(m[m.length-1].replace(',','.'));
     }
-    if (text.match(/Lépések|Lepesek/i)) {
-      const m = text.match(/(\d[\d\s]*)\s*(db|→|cél)/i);
+    if (text.match(/Lépések|Lepesek|lépés/i) && !data.lepesek) {
+      const m = text.match(/(\d[\d ]*)\s*(db)?/);
       if (m) data.lepesek = parseInt(m[1].replace(/\s/g,''));
     }
-    if (text.match(/Alváspontszám|Alvaspontszam/i)) {
+    if (text.match(/Alváspontszám|Alvaspontszam/i) && !data.alvas) {
       const m = text.match(/(\d+)/);
       if (m) data.alvas = parseInt(m[1]);
     }
-    if (text.match(/Böjt|Bojt/i)) {
-      const m = text.match(/~?(\d+h\d+|[\d,\.]+h)/i);
+    if (text.match(/Böjt.*?h|böjt.*?h/i) && !data.bojt) {
+      const m = text.match(/~?(\d+h\d*|\d+[\.,]\d+h)/i);
       if (m) data.bojt = m[1];
     }
-    if (text.match(/BB reggel/i)) {
+    if (text.match(/BB reggel/i) && !data.bb_reggel) {
       const m = text.match(/(\d+)/);
       if (m) data.bb_reggel = parseInt(m[1]);
     }
-    if (text.match(/VO2max/i)) {
-      const m = text.match(/:\s*(\d+)/);
+    if (text.match(/VO2max/i) && !data.vo2) {
+      const m = text.match(/(\d+)/);
       if (m) data.vo2 = parseInt(m[1]);
     }
   }
@@ -392,16 +390,17 @@ function parseHealthData(blocks) {
   return data;
 }
 
+// Helyes mozgásrotáció a Gábor OS szerint
 function getDayType() {
-  const day = new Date().getDay();
+  const day = new Date().getDay(); // 0=vasárnap
   const types = {
-    1: { name: 'Hétfő', type: 'Erő A (30-40 perc)', badge: 'badge-sport' },
-    2: { name: 'Kedd', type: 'Séta / Aktív pihenő', badge: 'badge-rutin' },
-    3: { name: 'Szerda', type: 'Erő B (30-40 perc)', badge: 'badge-sport' },
-    4: { name: 'Csütörtök', type: 'Erő C (30-40 perc)', badge: 'badge-sport' },
-    5: { name: 'Péntek', type: 'Könnyű nap', badge: 'badge-rutin' },
-    6: { name: 'Szombat', type: 'Hosszú séta', badge: 'badge-rutin' },
-    0: { name: 'Vasárnap', type: 'Pihenő nap', badge: 'badge-rutin' }
+    1: { name: 'Hétfő', type: '🧘 Könnyű nap (meditáció + jóga + nyújtás)', badge: 'badge-rutin', hasIroda: true, hasSzauna: true },
+    2: { name: 'Kedd', type: '💪 Erő A (30–40 perc)', badge: 'badge-sport', hasIroda: true, hasSzauna: false },
+    3: { name: 'Szerda', type: '🧘 Könnyű nap (meditáció + Thai chi + nyújtás)', badge: 'badge-rutin', hasIroda: true, hasSzauna: true },
+    4: { name: 'Csütörtök', type: '💪 Erő B (30–40 perc)', badge: 'badge-sport', hasIroda: true, hasSzauna: false },
+    5: { name: 'Péntek', type: '🧘 Könnyű nap (meditáció + jóga + nyújtás)', badge: 'badge-rutin', hasIroda: true, hasSzauna: true },
+    6: { name: 'Szombat', type: '🚶 Hosszú séta (4–5 km + Thai chi)', badge: 'badge-rutin', hasIroda: false, hasSzauna: true },
+    0: { name: 'Vasárnap', type: '😴 Pihenő nap (meditáció + könnyű nyújtás)', badge: 'badge-rutin', hasIroda: false, hasSzauna: false }
   };
   return types[day];
 }
@@ -410,17 +409,29 @@ function renderNapirend(dayInfo) {
   const card = document.getElementById('napirend-card');
   card.innerHTML = `<div class="card-title" style="margin-bottom:16px">${dayInfo.name} – ${dayInfo.type}</div>`;
 
-  const items = [
-    { time: '05:00', name: `💪 ${dayInfo.type}`, sub: 'reggeli edzés / rutin', badge: dayInfo.badge, link: 'https://app.notion.com/p/373a30954a74816d92eefbdd8b7922c8' },
-    { time: '06:00', name: '🧭 Napi Iránytű olvasás', sub: 'küldetés · adatok · célok', badge: 'badge-rutin', link: 'https://app.notion.com/p/373a30954a74816d92eefbdd8b7922c8' },
-    { time: '10:00', name: '⚡ Mikroedzés', sub: '10 perc', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' },
-    { time: '11:00', name: '😊 Arctorna', sub: '2 perc · 6 gyakorlat', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a748114bdb4dd3186c6bee9' },
-    { time: '14:00', name: '⚡ Mikroedzés', sub: '10 perc', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' },
-    { time: '16:00', name: '😊 Arctorna', sub: '2 perc · 6 gyakorlat', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a748114bdb4dd3186c6bee9' },
-    { time: '16:30', name: '⚡ Mikroedzés', sub: '10 perc', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' },
-    { time: 'este', name: '🚶 Séta + 🧖 Szauna', sub: '3–4 km orrlélegzéssel', badge: 'badge-rutin', link: null },
-    { time: '21:00', name: '🪞 Esti Reflexió', sub: '5–10 perc · 4 kérdés · Notionbe', badge: 'badge-reflex', link: 'https://app.notion.com/p/375a30954a748139b14ed183a0131070' }
-  ];
+  const items = [];
+
+  // Reggeli edzés
+  items.push({ time: '06:00', name: `💪 ${dayInfo.type}`, sub: 'reggeli protokoll + edzés', badge: dayInfo.badge, link: 'https://app.notion.com/p/373a30954a74816d92eefbdd8b7922c8' });
+  items.push({ time: '06:00', name: '🧭 Napi Iránytű olvasás', sub: 'küldetés · adatok · célok', badge: 'badge-rutin', link: 'https://app.notion.com/p/373a30954a74816d92eefbdd8b7922c8' });
+
+  if (dayInfo.hasIroda) {
+    items.push({ time: '10:00', name: '⚡ Mikroedzés', sub: '10 perc – irodai edzés', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' });
+    items.push({ time: '11:00', name: '😊 Arctorna', sub: '2 perc · 6 gyakorlat', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a748114bdb4dd3186c6bee9' });
+    items.push({ time: '14:00', name: '⚡ Mikroedzés', sub: '10 perc – irodai edzés', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' });
+    items.push({ time: '16:00', name: '😊 Arctorna', sub: '2 perc · 6 gyakorlat', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a748114bdb4dd3186c6bee9' });
+    items.push({ time: '16:30', name: '⚡ Mikroedzés', sub: '10 perc – irodai edzés', badge: 'badge-iroda', link: 'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' });
+  }
+
+  if (dayInfo.hasSzauna) {
+    items.push({ time: 'este', name: '🚶 Séta + 🔥 Szauna + 🚿 Hideg zuhany', sub: '3–4 km orrlélegzéssel · szauna · hideg víz', badge: 'badge-rutin', link: null });
+  } else if (day === 4) { // csütörtök
+    items.push({ time: 'este', name: '🚶 Séta + 🌬️ Oxigénkezelés', sub: '3–4 km · ALT-OE-87 15–20 perc', badge: 'badge-rutin', link: null });
+  } else if (day === 6) { // szombat
+    items.push({ time: 'délelőtt', name: '🌬️ Oxigénkezelés + 🔥 Szauna', sub: 'ALT-OE-87 · szauna 30p, 60–65°C', badge: 'badge-rutin', link: null });
+  }
+
+  items.push({ time: '21:00', name: '🪞 Esti Reflexió', sub: '5–10 perc · 4 kérdés · Notionbe', badge: 'badge-reflex', link: 'https://app.notion.com/p/375a30954a748139b14ed183a0131070' });
 
   items.forEach(item => {
     const el = document.createElement('div');
@@ -441,7 +452,7 @@ function renderNapirend(dayInfo) {
 function renderGarmin(data) {
   const metrics = [
     { label: 'Ny. pulzus', value: data.pulzus ? `${data.pulzus} bpm` : '–', dot: data.pulzus && data.pulzus < 60 ? 'dot-green' : 'dot-yellow' },
-    { label: 'HRV 7 napos', value: data.hrv ? `${data.hrv} → 45+` : '–', dot: data.hrv && data.hrv >= 40 ? 'dot-green' : 'dot-yellow' },
+    { label: 'HRV 7 napos', value: data.hrv ? `${data.hrv} → 45+` : '–', dot: data.hrv && data.hrv >= 43 ? 'dot-green' : 'dot-yellow' },
     { label: 'Alváspontszám', value: data.alvas ? `${data.alvas}/100` : '–', dot: data.alvas && data.alvas >= 85 ? 'dot-green' : 'dot-yellow' },
     { label: 'Böjt', value: data.bojt ? `~${data.bojt}` : '–', dot: 'dot-green' },
     { label: 'BB reggel', value: data.bb_reggel ? `${data.bb_reggel}/100` : '–', dot: data.bb_reggel && data.bb_reggel >= 80 ? 'dot-green' : 'dot-yellow' },
@@ -467,17 +478,14 @@ async function loadDashboard() {
 
     const blocks = await getPageBlocks(EGESZSEG_PAGE_ID);
 
-    // Parse counters
     const { cukor, liszt } = parseCounters(blocks);
     document.getElementById('cukor-szam').textContent = cukor || '–';
     document.getElementById('liszt-szam').textContent = liszt || '–';
     document.getElementById('cukor-sub').textContent = cukor ? `→ ma a ${cukor + 1}. lehet!` : '';
     document.getElementById('liszt-sub').textContent = liszt ? `→ ma a ${liszt + 1}. lehet!` : '';
 
-    // Parse health data
     const health = parseHealthData(blocks);
 
-    // Mérleg
     if (health.feelfit_date) document.getElementById('feelfit-date').textContent = health.feelfit_date;
     if (health.suly) {
       document.getElementById('suly-val').textContent = `${health.suly} → 79.9 kg`;
@@ -496,7 +504,6 @@ async function loadDashboard() {
       document.getElementById('izom-val').textContent = `${health.izom} kg ↑`;
     }
 
-    // Merleg details
     const details = [];
     if (health.protein) details.push({ label: 'Protein', value: `${health.protein}%` });
     if (health.bmr) details.push({ label: 'BMR', value: `${health.bmr} kcal` });
@@ -505,26 +512,21 @@ async function loadDashboard() {
       <div class="metric-row"><span class="metric-label">${d.label}</span><span class="metric-value">${d.value}</span></div>
     `).join('');
 
-    // Garmin
     if (health.garmin_date) document.getElementById('garmin-date').textContent = health.garmin_date;
     renderGarmin(health);
 
-    // Mai cél
     const cukorNext = cukor ? cukor + 1 : '?';
     const lisztNext = liszt ? liszt + 1 : '?';
     document.getElementById('mai-cel').innerHTML = `
       🍬 Legyen ez a <strong>${cukorNext}. cukormentes napod!</strong><br>
       🌾 Legyen ez a <strong>${lisztNext}. lisztmentes napod!</strong><br>
-      ⏱️ Böjt cél: <strong>16h+</strong> &nbsp;·&nbsp; Zsigeri zsír: <strong>${health.zsiger || 13} → ${(health.zsiger || 13) - 1}</strong>
+      ⏱️ Böjt cél: <strong>16h+</strong> &nbsp;·&nbsp; Zsigeri zsír tartás: <strong>${health.zsiger || 13} → stabil ✅</strong>
     `;
 
-    // Napirend
     renderNapirend(getDayType());
 
-    // Last updated
     document.getElementById('last-updated').textContent = `Utoljára frissítve: ${new Date().toLocaleTimeString('hu-HU')}`;
 
-    // Show dashboard
     document.getElementById('loading').style.display = 'none';
     document.getElementById('dashboard').style.display = 'block';
     document.getElementById('dashboard').classList.add('fade-in');
