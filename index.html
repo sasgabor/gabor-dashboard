@@ -292,17 +292,18 @@ function extractText(block) {
 
 function parseCounters(blocks) {
   let cukor = null, liszt = null;
-  let inCounters = false;
   for (const block of blocks) {
     const text = extractText(block);
-    if (text.includes('Számlálók') || text.includes('SZÁMLÁLÓK') || text.includes('Számláló')) inCounters = true;
-    if (inCounters) {
-      const cm = text.match(/Cukormentes[^|]*\|\s*(\d+)/i) || text.match(/Cukormentes.*?(\d+)/i);
-      const lm = text.match(/Lisztmentes[^|]*\|\s*(\d+)/i) || text.match(/Lisztmentes.*?(\d+)/i);
-      if (cm) cukor = parseInt(cm[1]);
-      if (lm) liszt = parseInt(lm[1]);
-      if (cukor && liszt) break;
+    // Notion formátum: "🍬 Cukormentes napok \| 30 \| 2026.06.06." (backslash-escaped pipe)
+    if (text.match(/Cukormentes/i)) {
+      const m = text.match(/\\?\|\s*(\d+)\s*\\?\|/);
+      if (m) cukor = parseInt(m[1]);
     }
+    if (text.match(/Lisztmentes/i)) {
+      const m = text.match(/\\?\|\s*(\d+)\s*\\?\|/);
+      if (m) liszt = parseInt(m[1]);
+    }
+    if (cukor && liszt) break;
   }
   if (!cukor) cukor = FALLBACK.cukor;
   if (!liszt) liszt = FALLBACK.liszt;
