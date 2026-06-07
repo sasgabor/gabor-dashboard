@@ -5,392 +5,375 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rosas Dashboard</title>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Mono:wght@400;500&display=swap');
   :root {
-    --rose:#C0392B;--rose-dark:#96281B;--rose-light:#FADBD8;--rose-pale:#FEF5F4;
-    --ink:#1A1A2E;--ink-mid:#3D3D5C;--ink-light:#7B7B9A;
-    --border:#E8E8F0;--bg:#F7F7FB;--white:#FFFFFF;
-    --green:#27AE60;--green-bg:#EAFAF1;
-    --amber:#E67E22;--amber-bg:#FEF9E7;
-    --blue:#2980B9;--blue-bg:#EBF5FB;
-    --gray:#95A5A6;--gray-bg:#F2F3F4;
-    --red-bg:#FDEDEC;
+    --rose: #c0392b;
+    --rose-light: #e74c3c;
+    --rose-pale: #fdf2f2;
+    --dark: #1a1a2e;
+    --dark2: #16213e;
+    --card: #0f3460;
+    --text: #e0e0e0;
+    --text-dim: #a0a0b0;
+    --green: #27ae60;
+    --yellow: #f39c12;
+    --red: #e74c3c;
+    --blue: #2980b9;
+    --purple: #8e44ad;
+    --border: rgba(255,255,255,0.08);
   }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--ink);min-height:100vh;}
-  .header{background:var(--ink);padding:0 32px;display:flex;align-items:center;justify-content:space-between;height:64px;position:sticky;top:0;z-index:100;}
-  .logo{display:flex;align-items:center;gap:12px;color:var(--white);font-weight:700;font-size:18px;}
-  .logo-rose{width:32px;height:32px;background:var(--rose);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;}
-  .header-meta{color:var(--ink-light);font-size:13px;font-family:'DM Mono',monospace;}
-  .priority-strip{background:linear-gradient(135deg,var(--rose) 0%,var(--rose-dark) 100%);padding:14px 32px;display:flex;align-items:center;gap:24px;}
-  .priority-label{color:rgba(255,255,255,0.7);font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;white-space:nowrap;}
-  .priority-items{display:flex;gap:8px;flex-wrap:wrap;}
-  .priority-item{background:rgba(255,255,255,0.15);border:1px solid rgba(255,255,255,0.25);border-radius:6px;padding:6px 14px;color:white;font-size:13px;font-weight:500;display:flex;align-items:center;gap:8px;}
-  .priority-item .num{background:rgba(255,255,255,0.25);border-radius:4px;width:20px;height:20px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;}
-  .main{max-width:1280px;margin:0 auto;padding:28px 32px;display:grid;grid-template-columns:1fr 1fr;gap:24px;}
-  .full-width{grid-column:1/-1;}
-  .section-title{font-size:11px;font-weight:600;letter-spacing:1.2px;text-transform:uppercase;color:var(--ink-light);margin-bottom:14px;display:flex;align-items:center;gap:8px;}
-  .section-title::after{content:'';flex:1;height:1px;background:var(--border);}
-  .card{background:var(--white);border-radius:12px;border:1px solid var(--border);overflow:hidden;}
-  .card-header{padding:18px 20px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-  .card-title{font-size:14px;font-weight:600;color:var(--ink);display:flex;align-items:center;gap:8px;}
-  .card-body{padding:16px 20px;}
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background: var(--dark); color: var(--text); font-family: 'Segoe UI', sans-serif; font-size:14px; }
 
-  /* ALERT BAR */
-  .alert-bar{background:var(--red-bg);border:1px solid var(--rose-light);border-radius:12px;padding:16px 20px;display:flex;align-items:flex-start;gap:14px;margin-bottom:0;}
-  .alert-icon{font-size:20px;flex-shrink:0;margin-top:2px;}
-  .alert-title{font-size:14px;font-weight:700;color:var(--rose-dark);margin-bottom:4px;}
-  .alert-text{font-size:13px;color:var(--ink-mid);line-height:1.6;}
-  .alert-nums{display:flex;gap:24px;margin-top:10px;flex-wrap:wrap;}
-  .alert-num{text-align:center;}
-  .alert-num .val{font-size:20px;font-weight:700;color:var(--rose);}
-  .alert-num .lbl{font-size:11px;color:var(--ink-light);margin-top:2px;}
+  /* HEADER */
+  .header { background: linear-gradient(135deg, #8B0000, #c0392b); padding:18px 24px; display:flex; align-items:center; gap:12px; }
+  .header-logo { font-size:28px; }
+  .header-title { font-size:20px; font-weight:700; letter-spacing:0.5px; }
+  .header-sub { font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px; }
 
-  /* PROFIT CHART */
-  .profit-chart-wrap{padding:16px 20px;}
-  .chart-bars{display:flex;align-items:flex-end;gap:6px;height:120px;margin-bottom:8px;}
-  .chart-bar-group{display:flex;flex-direction:column;align-items:center;flex:1;gap:2px;}
-  .bar-pair{display:flex;align-items:flex-end;gap:2px;height:100px;}
-  .bar{border-radius:3px 3px 0 0;min-height:2px;transition:height 0.4s;}
-  .bar-arb{background:var(--blue);opacity:0.5;}
-  .bar-uzemi{background:var(--green);}
-  .bar-year{font-size:9px;color:var(--ink-light);margin-top:4px;text-align:center;}
-  .chart-legend{display:flex;gap:16px;justify-content:center;margin-top:8px;}
-  .legend-item{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-mid);}
-  .legend-dot{width:10px;height:10px;border-radius:2px;}
+  /* TOP PRIORITY BAND */
+  .priority-band { background: #0d1b2a; border-bottom: 2px solid var(--rose); padding:10px 24px; display:flex; gap:24px; align-items:center; flex-wrap:wrap; }
+  .priority-label { font-size:11px; font-weight:700; color:var(--rose-light); text-transform:uppercase; letter-spacing:1px; white-space:nowrap; }
+  .priority-item { background: rgba(192,57,43,0.15); border:1px solid rgba(192,57,43,0.3); border-radius:6px; padding:4px 12px; font-size:12px; font-weight:600; }
+  .priority-item span { color:var(--rose-light); margin-right:6px; }
 
-  /* KPI GRID */
-  .kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;}
-  .kpi-card{padding:16px;border-right:1px solid var(--border);}
-  .kpi-card:last-child{border-right:none;}
-  .kpi-label{font-size:11px;color:var(--ink-light);margin-bottom:6px;}
-  .kpi-val{font-size:22px;font-weight:700;line-height:1;}
-  .kpi-sub{font-size:11px;margin-top:4px;}
-  .kpi-red{color:var(--rose);}
-  .kpi-green{color:var(--green);}
-  .kpi-amber{color:var(--amber);}
+  /* ALERT */
+  .alert { background: rgba(231,76,60,0.12); border-left:4px solid var(--red); margin:20px 24px 0; padding:12px 16px; border-radius:4px; font-size:13px; line-height:1.6; }
+  .alert-icon { font-size:16px; margin-right:8px; }
 
-  /* WIKI */
-  .wiki-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;}
-  .wiki-card{padding:20px;border-right:1px solid var(--border);}
-  .wiki-card:last-child{border-right:none;}
-  .wiki-name{font-size:12px;font-weight:600;color:var(--ink-mid);margin-bottom:12px;}
-  .wiki-progress{height:4px;background:var(--border);border-radius:2px;margin-bottom:12px;overflow:hidden;}
-  .wiki-progress-fill{height:100%;border-radius:2px;}
-  .wiki-items{display:flex;flex-direction:column;gap:6px;}
-  .wiki-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--ink-mid);}
-  .wiki-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;}
-  .dot-done{background:var(--green);}
-  .dot-progress{background:var(--amber);}
-  .dot-missing{background:var(--border);border:1.5px solid var(--gray);}
+  /* GRID */
+  .grid-2 { display:grid; grid-template-columns:1fr 1fr; gap:16px; padding:16px 24px; }
+  .grid-3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:16px; padding:0 24px 16px; }
+  @media(max-width:900px){ .grid-2{grid-template-columns:1fr;} .grid-3{grid-template-columns:1fr;} }
 
-  /* PROJECTS */
-  .projects-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:0;}
-  .project-col{border-right:1px solid var(--border);min-height:200px;}
-  .project-col:last-child{border-right:none;}
-  .project-col-header{padding:12px 16px;border-bottom:1px solid var(--border);font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:0.8px;display:flex;align-items:center;gap:8px;}
-  .col-in-progress .project-col-header{color:var(--amber);background:var(--amber-bg);}
-  .col-done .project-col-header{color:var(--green);background:var(--green-bg);}
-  .col-parked .project-col-header{color:var(--gray);background:var(--gray-bg);}
-  .project-col-body{padding:12px;display:flex;flex-direction:column;gap:8px;}
-  .project-item{background:var(--bg);border-radius:8px;padding:10px 12px;border:1px solid var(--border);}
-  .project-item-title{font-size:12px;font-weight:600;color:var(--ink);margin-bottom:4px;line-height:1.4;}
-  .project-item-meta{font-size:11px;color:var(--ink-light);display:flex;align-items:center;gap:6px;flex-wrap:wrap;}
-  .done-note{background:var(--green-bg);border:1px solid #A9DFBF;border-radius:8px;padding:10px 14px;margin:12px;font-size:11px;color:#1E8449;line-height:1.5;}
+  /* CARDS */
+  .card { background: var(--dark2); border:1px solid var(--border); border-radius:10px; padding:16px; }
+  .card-title { font-size:12px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:12px; }
 
-  /* NEXT STEPS */
-  .next-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;}
-  .next-item{display:flex;gap:12px;align-items:flex-start;padding:14px;background:var(--bg);border-radius:8px;border:1px solid var(--border);}
-  .next-num{width:28px;height:28px;background:var(--rose);color:white;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0;}
-  .next-text{font-size:13px;color:var(--ink-mid);line-height:1.5;}
-  .next-text strong{color:var(--ink);font-weight:600;}
+  /* STAT CARDS */
+  .stats-row { display:flex; gap:12px; padding:16px 24px 0; flex-wrap:wrap; }
+  .stat-card { flex:1; min-width:120px; background:var(--dark2); border:1px solid var(--border); border-radius:10px; padding:14px 16px; text-align:center; }
+  .stat-val { font-size:22px; font-weight:800; color:var(--rose-light); }
+  .stat-label { font-size:11px; color:var(--text-dim); margin-top:4px; }
 
-  .badge{display:inline-flex;align-items:center;border-radius:4px;padding:2px 7px;font-size:10px;font-weight:600;white-space:nowrap;}
-  .badge-green{background:var(--green-bg);color:var(--green);}
-  .badge-amber{background:var(--amber-bg);color:var(--amber);}
-  .badge-blue{background:var(--blue-bg);color:var(--blue);}
-  .badge-gray{background:var(--gray-bg);color:var(--gray);}
-  .badge-rose{background:var(--rose-light);color:var(--rose-dark);}
+  /* KPI TABLE */
+  .kpi-table { width:100%; border-collapse:collapse; }
+  .kpi-table tr { border-bottom:1px solid var(--border); }
+  .kpi-table tr:last-child { border-bottom:none; }
+  .kpi-table td { padding:7px 4px; font-size:13px; }
+  .kpi-table td:first-child { color:var(--text-dim); width:55%; }
+  .kpi-table td:nth-child(2) { font-weight:700; text-align:right; }
+  .kpi-table td:nth-child(3) { font-size:11px; color:var(--text-dim); text-align:right; padding-left:8px; }
+  .up { color: var(--green) !important; }
+  .down { color: var(--red) !important; }
+  .warn { color: var(--yellow) !important; }
 
-  .loading{display:flex;align-items:center;justify-content:center;padding:32px;color:var(--ink-light);font-size:13px;gap:10px;}
-  .spinner{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--rose);border-radius:50%;animation:spin 0.8s linear infinite;}
-  @keyframes spin{to{transform:rotate(360deg);}}
-  .error-note{background:var(--rose-pale);border:1px solid var(--rose-light);border-radius:8px;padding:10px 14px;margin:12px;font-size:12px;color:var(--rose-dark);}
-  .footer{text-align:center;padding:20px;color:var(--ink-light);font-size:11px;font-family:'DM Mono',monospace;border-top:1px solid var(--border);margin-top:8px;}
-  @media(max-width:900px){.main{grid-template-columns:1fr;padding:16px;}.wiki-grid,.kpi-grid{grid-template-columns:repeat(2,1fr);}.projects-grid{grid-template-columns:1fr;}.next-grid{grid-template-columns:1fr;}.priority-strip{flex-wrap:wrap;}}
+  /* CHART */
+  .chart-wrap { padding:0 24px 16px; }
+  .chart-card { background:var(--dark2); border:1px solid var(--border); border-radius:10px; padding:16px; }
+  .chart-title { font-size:12px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; margin-bottom:14px; }
+  .bar-row { display:flex; align-items:center; gap:8px; margin-bottom:6px; }
+  .bar-year { width:34px; font-size:11px; color:var(--text-dim); text-align:right; flex-shrink:0; }
+  .bar-track { flex:1; background:rgba(255,255,255,0.05); border-radius:3px; height:18px; position:relative; }
+  .bar-fill-rev { background:rgba(192,57,43,0.35); height:100%; border-radius:3px; position:absolute; top:0; left:0; }
+  .bar-fill-op { background:var(--rose-light); height:100%; border-radius:3px; position:absolute; top:0; left:0; }
+  .bar-val { font-size:11px; color:var(--text-dim); width:52px; text-align:right; flex-shrink:0; }
+  .chart-legend { display:flex; gap:16px; margin-top:10px; }
+  .legend-item { display:flex; align-items:center; gap:6px; font-size:11px; color:var(--text-dim); }
+  .legend-dot-rev { width:12px; height:12px; border-radius:2px; background:rgba(192,57,43,0.35); }
+  .legend-dot-op { width:12px; height:12px; border-radius:2px; background:var(--rose-light); }
+
+  /* WIKI STATUS */
+  .wiki-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .wiki-card { background:rgba(255,255,255,0.03); border:1px solid var(--border); border-radius:8px; padding:12px; }
+  .wiki-card-title { font-size:12px; font-weight:700; margin-bottom:8px; }
+  .wiki-item { font-size:12px; padding:3px 0; display:flex; align-items:flex-start; gap:6px; }
+  .wiki-item .dot { flex-shrink:0; margin-top:2px; }
+
+  /* PROJEKTEK */
+  .projects-grid { display:grid; grid-template-columns:1fr 1fr 1fr; gap:14px; padding:0 24px 16px; }
+  @media(max-width:900px){ .projects-grid{grid-template-columns:1fr;} }
+  .proj-col { background:var(--dark2); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .proj-col-header { padding:10px 14px; font-size:12px; font-weight:700; text-transform:uppercase; letter-spacing:0.8px; }
+  .proj-col-header.folyamatban { background:rgba(41,128,185,0.25); color:#5dade2; }
+  .proj-col-header.elvegzett { background:rgba(39,174,96,0.25); color:#58d68d; }
+  .proj-col-header.parkolvan { background:rgba(127,140,141,0.25); color:#aab7b8; }
+  .proj-items { padding:10px; min-height:80px; }
+  .proj-item { background:rgba(255,255,255,0.05); border-radius:6px; padding:8px 10px; margin-bottom:8px; font-size:12px; line-height:1.5; }
+  .proj-item:last-child { margin-bottom:0; }
+  .proj-item-new { border-left: 3px solid var(--yellow); }
+  .proj-note { font-size:11px; color:var(--text-dim); margin-top:4px; }
+  .loading { color:var(--text-dim); font-size:12px; font-style:italic; padding:8px 4px; }
+
+  /* KÖVETKEZŐ LÉPÉSEK */
+  .steps-wrap { padding:0 24px 16px; }
+  .steps-card { background:var(--dark2); border:1px solid var(--border); border-radius:10px; padding:16px; }
+  .step-item { display:flex; gap:12px; padding:8px 0; border-bottom:1px solid var(--border); align-items:flex-start; }
+  .step-item:last-child { border-bottom:none; }
+  .step-num { background:var(--rose); color:#fff; font-size:12px; font-weight:800; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; flex-shrink:0; margin-top:1px; }
+  .step-num.new { background: var(--yellow); color: var(--dark); }
+  .step-text { font-size:13px; line-height:1.6; }
+  .step-badge { display:inline-block; background:rgba(192,57,43,0.2); color:var(--rose-light); font-size:10px; font-weight:700; border-radius:4px; padding:1px 6px; margin-left:6px; vertical-align:middle; }
+  .step-badge.new { background:rgba(243,156,18,0.2); color:var(--yellow); }
+
+  /* FOOTER */
+  .footer { text-align:center; padding:16px 24px; font-size:11px; color:var(--text-dim); border-top:1px solid var(--border); margin-top:8px; }
+
+  /* SECTION TITLE */
+  .section-title { font-size:13px; font-weight:700; color:var(--text-dim); text-transform:uppercase; letter-spacing:0.8px; padding:16px 24px 4px; }
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <div class="header">
-  <div class="logo">
-    <div class="logo-rose">🌹</div>
-    Rosas Logisztikai Kft.
+  <div class="header-logo">🌹</div>
+  <div>
+    <div class="header-title">Rosas Logisztikai Kft.</div>
+    <div class="header-sub">Frissítve: 2026.06.07. · Rendszerprompt v3.8</div>
   </div>
-  <div class="header-meta" id="lastUpdate">Frissítve: 2026.06.06.</div>
 </div>
 
-<div class="priority-strip">
+<!-- TOP PRIORITY BAND -->
+<div class="priority-band">
   <div class="priority-label">Top prioritás</div>
-  <div class="priority-items">
-    <div class="priority-item"><span class="num">1</span> Import AI ág felépítése</div>
-    <div class="priority-item"><span class="num">2</span> 2024–2025 főkönyv → KPI ✅ Feltöltve</div>
-    <div class="priority-item"><span class="num">3</span> 58 csali letöltő email sorozat</div>
+  <div class="priority-item"><span>1</span>Import AI ág felépítése</div>
+  <div class="priority-item"><span>2</span>Q1 2026 főkönyv feltöltése és elemzése 🆕</div>
+  <div class="priority-item"><span>3</span>58 csali letöltő email sorozat</div>
+</div>
+
+<!-- ALERT -->
+<div class="alert">
+  <span class="alert-icon">⚠️</span>
+  <strong>Kritikus profitcsökkenés – azonnali beavatkozás szükséges.</strong>
+  Az árbevétel +7,2%-kal nőtt, de az adózott eredmény 55,1 M Ft-ról 8,0 M Ft-ra zuhant (–85,5%).
+  Fő ok: a személyi jellegű ráfordítások +58%-kal nőttek egy év alatt (létszám 9→12 fő), az árbevétel ezt nem követte.
+  A meglévő kapacitást nagyobb bevétellel kell megtölteni.
+</div>
+
+<!-- STAT CARDS -->
+<div class="stats-row">
+  <div class="stat-card"><div class="stat-val">549 M</div><div class="stat-label">Árbevétel 2025</div></div>
+  <div class="stat-card"><div class="stat-val">26,3 M</div><div class="stat-label">Üzemi eredmény</div></div>
+  <div class="stat-card"><div class="stat-val down">8,0 M</div><div class="stat-label">Adózott eredmény</div></div>
+  <div class="stat-card"><div class="stat-val warn">16,6%</div><div class="stat-label">Személyi ktg / árb.</div></div>
+  <div class="stat-card"><div class="stat-val up">2,05</div><div class="stat-label">Likviditási ráta ✅</div></div>
+  <div class="stat-card"><div class="stat-val">12 fő</div><div class="stat-label">Létszám 2025</div></div>
+</div>
+
+<!-- CHART -->
+<div class="chart-wrap" style="margin-top:16px;">
+  <div class="chart-card">
+    <div class="chart-title">📊 Üzemi eredmény alakulása (2017–2025)</div>
+    <div id="chartContainer"></div>
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-dot-rev"></div>Árbevétel (skálázva)</div>
+      <div class="legend-item"><div class="legend-dot-op"></div>Üzemi eredmény</div>
+    </div>
   </div>
 </div>
 
-<div class="main">
-
-  <!-- PROFIT ALERT -->
-  <div class="full-width">
-    <div class="section-title">Pénzügyi helyzet – 2025 zárószámok</div>
-    <div class="alert-bar">
-      <div class="alert-icon">⚠️</div>
-      <div style="flex:1">
-        <div class="alert-title">Kritikus profitcsökkenés – azonnali beavatkozás szükséges</div>
-        <div class="alert-text">Az árbevétel +7,2%-kal nőtt, de az adózott eredmény 55,1 M Ft-ról 8,0 M Ft-ra zuhant (–85,5%). Fő ok: a személyi jellegű ráfordítások +58%-kal nőttek egy év alatt (létszám 9→12 fő), az árbevétel ezt nem követte. A meglévő kapacitást nagyobb bevétellel kell megtölteni.</div>
-        <div class="alert-nums">
-          <div class="alert-num"><div class="val">549 M</div><div class="lbl">Árbevétel 2025</div></div>
-          <div class="alert-num"><div class="val" style="color:var(--amber)">26,3 M</div><div class="lbl">Üzemi eredmény</div></div>
-          <div class="alert-num"><div class="val">8,0 M</div><div class="lbl">Adózott eredmény</div></div>
-          <div class="alert-num"><div class="val" style="color:var(--amber)">16,6%</div><div class="lbl">Személyi ktg / árb.</div></div>
-          <div class="alert-num"><div class="val" style="color:var(--green)">2,05</div><div class="lbl">Likviditási ráta ✅</div></div>
-          <div class="alert-num"><div class="val" style="color:var(--green)">12 fő</div><div class="lbl">Létszám 2025</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PROFIT CHART -->
+<!-- KPI + WIKI -->
+<div class="grid-2">
   <div class="card">
-    <div class="card-header">
-      <div class="card-title">📊 Üzemi eredmény alakulása (2017–2025)</div>
-    </div>
-    <div class="profit-chart-wrap">
-      <div class="chart-bars" id="profitChart"></div>
-      <div class="chart-legend">
-        <div class="legend-item"><div class="legend-dot" style="background:var(--blue);opacity:0.5"></div>Árbevétel (skálázva)</div>
-        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Üzemi eredmény</div>
-      </div>
-    </div>
+    <div class="card-title">🎯 KPI mutatók – 2024 vs 2025</div>
+    <table class="kpi-table">
+      <tr><td>Árbevétel</td><td class="up">549 M</td><td>+7,2% vs 2024</td></tr>
+      <tr><td>Üzemi eredmény</td><td class="down">26,3 M</td><td>–43,6% vs 2024</td></tr>
+      <tr><td>Adózott eredmény</td><td class="down">8,0 M</td><td>–85,5% vs 2024</td></tr>
+      <tr><td>Profitráta</td><td class="down">4,8%</td><td>2024: 9,1%</td></tr>
+      <tr><td>Személyi ktg / árb.</td><td class="warn">16,6%</td><td>2024: 11,3%</td></tr>
+      <tr><td>Likviditási ráta</td><td class="up">2,05</td><td>Kiváló ✅</td></tr>
+      <tr><td>Pénzügyi eredmény</td><td class="down">–8,6 M</td><td>Árfolyam (egyszeri)</td></tr>
+      <tr><td>Létszám</td><td>12 fő</td><td>2022: 6 fő volt</td></tr>
+    </table>
   </div>
-
-  <!-- KPI KÁRTYÁK -->
   <div class="card">
-    <div class="card-header">
-      <div class="card-title">🎯 KPI mutatók – 2024 vs 2025</div>
-    </div>
-    <div class="kpi-grid">
-      <div class="kpi-card">
-        <div class="kpi-label">Árbevétel</div>
-        <div class="kpi-val kpi-green">549 M</div>
-        <div class="kpi-sub kpi-green">+7,2% vs 2024</div>
+    <div class="card-title">📚 Wiki & Tudásbázis státusz</div>
+    <div class="wiki-grid">
+      <div class="wiki-card">
+        <div class="wiki-card-title">📋 Vámkezelés</div>
+        <div class="wiki-item"><span class="dot">✅</span> Márka hang, árazás, csapat</div>
+        <div class="wiki-item"><span class="dot">✅</span> Folyamatleírások + Metaadat</div>
+        <div class="wiki-item"><span class="dot">⏳</span> Kérdőív visszaérkezés várt</div>
+        <div class="wiki-item"><span class="dot">❌</span> Mély ügyfél-szemszögű leírás</div>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Üzemi eredmény</div>
-        <div class="kpi-val kpi-red">26,3 M</div>
-        <div class="kpi-sub kpi-red">–43,6% vs 2024</div>
+      <div class="wiki-card">
+        <div class="wiki-card-title">🚛 SPED</div>
+        <div class="wiki-item"><span class="dot">✅</span> Alap struktúra kész</div>
+        <div class="wiki-item"><span class="dot">⏳</span> Kérdőív visszaérkezés várt</div>
+        <div class="wiki-item"><span class="dot">❌</span> Mély leírás és ellenvetések</div>
+        <div class="wiki-item"><span class="dot">❌</span> ADR/IMO/IATA protokoll</div>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Adózott eredmény</div>
-        <div class="kpi-val kpi-red">8,0 M</div>
-        <div class="kpi-sub kpi-red">–85,5% vs 2024</div>
+      <div class="wiki-card">
+        <div class="wiki-card-title">📊 Profit & KPI</div>
+        <div class="wiki-item"><span class="dot">✅</span> KPI rendszer létrehozva</div>
+        <div class="wiki-item"><span class="dot">✅</span> 2024–2025 főkönyvi adatok</div>
+        <div class="wiki-item"><span class="dot">✅</span> Historikus adatok (OPTEN)</div>
+        <div class="wiki-item"><span class="dot">🆕</span> Q1 2026 főkönyv – várt</div>
       </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Profitráta</div>
-        <div class="kpi-val kpi-red">4,8%</div>
-        <div class="kpi-sub kpi-red">2024: 9,1%</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Személyi ktg / árb.</div>
-        <div class="kpi-val kpi-red">16,6%</div>
-        <div class="kpi-sub kpi-red">2024: 11,3%</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Likviditási ráta</div>
-        <div class="kpi-val kpi-green">2,05</div>
-        <div class="kpi-sub kpi-green">Kiváló ✅</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Pénzügyi eredmény</div>
-        <div class="kpi-val kpi-amber">–8,6 M</div>
-        <div class="kpi-sub kpi-amber">Árfolyam (€/$ → Ft) ✓ Egyszeri</div>
-      </div>
-      <div class="kpi-card">
-        <div class="kpi-label">Létszám</div>
-        <div class="kpi-val kpi-amber">12 fő</div>
-        <div class="kpi-sub kpi-amber">2022: 6 fő volt</div>
+      <div class="wiki-card">
+        <div class="wiki-card-title">🤖 AI automatizálás</div>
+        <div class="wiki-item"><span class="dot">✅</span> Export ág kész</div>
+        <div class="wiki-item"><span class="dot">🔄</span> IMAP csere folyamatban</div>
+        <div class="wiki-item"><span class="dot">⏳</span> Import ág felépítése</div>
+        <div class="wiki-item"><span class="dot">📋</span> SPED ág tesztelése</div>
       </div>
     </div>
   </div>
-
-  <!-- WIKI STATUS -->
-  <div class="full-width">
-    <div class="section-title">Wiki & Tudásbázis státusz</div>
-    <div class="card">
-      <div class="wiki-grid">
-        <div class="wiki-card">
-          <div class="wiki-name">📋 Vámkezelés</div>
-          <div class="wiki-progress"><div class="wiki-progress-fill" style="width:70%;background:var(--green)"></div></div>
-          <div class="wiki-items">
-            <div class="wiki-item"><span class="wiki-dot dot-done"></span>Márka hang, árazás, csapat</div>
-            <div class="wiki-item"><span class="wiki-dot dot-done"></span>Folyamatleírások + Metaadat</div>
-            <div class="wiki-item"><span class="wiki-dot dot-progress"></span>Kérdőív visszaérkezés várt</div>
-            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>Mély ügyfél-szemszögű leírás</div>
-          </div>
-        </div>
-        <div class="wiki-card">
-          <div class="wiki-name">🚛 SPED</div>
-          <div class="wiki-progress"><div class="wiki-progress-fill" style="width:50%;background:var(--amber)"></div></div>
-          <div class="wiki-items">
-            <div class="wiki-item"><span class="wiki-dot dot-done"></span>Alap struktúra kész</div>
-            <div class="wiki-item"><span class="wiki-dot dot-progress"></span>Kérdőív visszaérkezés várt</div>
-            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>Mély leírás és ellenvetések</div>
-            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>ADR/IMO/IATA protokoll</div>
-          </div>
-        </div>
-        <div class="wiki-card">
-          <div class="wiki-name">📊 Profit & KPI</div>
-          <div class="wiki-progress"><div class="wiki-progress-fill" style="width:80%;background:var(--green)"></div></div>
-          <div class="wiki-items">
-            <div class="wiki-item"><span class="wiki-dot dot-done"></span>KPI rendszer létrehozva</div>
-            <div class="wiki-item"><span class="wiki-dot dot-done"></span>2024–2025 főkönyvi adatok ✅</div>
-            <div class="wiki-item"><span class="wiki-dot dot-done"></span>Historikus adatok (OPTEN) ✅</div>
-            <div class="wiki-item"><span class="wiki-dot dot-progress"></span>9,175 M Ft értékvesztés forrása (KSZ)</div>
-          </div>
-        </div>
-        <div class="wiki-card">
-          <div class="wiki-name">🤖 AI automatizálás</div>
-          <div class="wiki-progress"><div class="wiki-progress-fill" style="width:35%;background:var(--rose)"></div></div>
-          <div class="wiki-items">
-            <div class="wiki-item"><span class="wiki-dot dot-done"></span>Export ág kész</div>
-            <div class="wiki-item"><span class="wiki-dot dot-progress"></span>IMAP csere folyamatban</div>
-            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>Import ág felépítése</div>
-            <div class="wiki-item"><span class="wiki-dot dot-missing"></span>SPED ág tesztelése</div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- PROJECTS -->
-  <div class="full-width">
-    <div class="section-title">Projektek & Iniciatívák</div>
-    <div class="card">
-      <div class="projects-grid">
-        <div class="project-col col-in-progress">
-          <div class="project-col-header">🔄 Folyamatban</div>
-          <div class="project-col-body" id="in-progress-col"><div class="loading"><div class="spinner"></div>Betöltés...</div></div>
-        </div>
-        <div class="project-col col-done">
-          <div class="project-col-header">✅ Elvégzett fejlesztések</div>
-          <div class="project-col-body" id="done-col">
-            <div class="done-note">ℹ️ A projekt-követés <strong>2026.06.05. 19:00-tól</strong> indul. Az előtte elvégzett fejlesztések a Notion Wikiben dokumentáltak.</div>
-          </div>
-        </div>
-        <div class="project-col col-parked">
-          <div class="project-col-header">⏸ Nem kezdett / Parkoló</div>
-          <div class="project-col-body" id="parked-col"><div class="loading"><div class="spinner"></div>Betöltés...</div></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- NEXT STEPS -->
-  <div class="full-width">
-    <div class="section-title">Következő lépések</div>
-    <div class="card card-body">
-      <div class="next-grid">
-        <div class="next-item"><div class="next-num">1</div><div class="next-text"><strong>IMAP csere Make.com-ban</strong> – Gmail modul → ajanlat1@rosas-group.com IMAP trigger az AI export ágban.</div></div>
-        <div class="next-item"><div class="next-num">2</div><div class="next-text"><strong>Import AI ág felépítése</strong> – export ág mintájára. Bevonandó: Pető Niki.</div></div>
-        <div class="next-item"><div class="next-num">3</div><div class="next-text"><strong>Vámkezelési adatok ellenőrzése + kitöltés-automatizálás</strong> – vezetői meetingen eldöntve. Emberi hibák kiszűrése, utólagos munka csökkentése. Bevonandó: Varga Csaba, Hugyecz József.</div></div>
-        <div class="next-item"><div class="next-num">4</div><div class="next-text"><strong>58 csali letöltő email sorozat</strong> – SalesAutopilot / Make.com. Bevonandó: Kaplonyi Aranka.</div></div>
-        <div class="next-item"><div class="next-num">5</div><div class="next-text"><strong>Termékismertető kérdőívek feldolgozása</strong> – Varga Cs., HJ, Albitz V., Csortos B. visszaérkezés után Claude integrálja Wiki-be.</div></div>
-        <div class="next-item"><div class="next-num">6</div><div class="next-text"><strong>Ügyfél-profitabilitás elemzés + áremelés</strong> – 986 ügyfél a CRM-ben ✅ ellenőrizve. Következő: aktív/alvó szétválasztás, profitelemzés.</div></div>
-      </div>
-    </div>
-  </div>
-
 </div>
 
-<div style="background:var(--blue-bg);border-top:1px solid var(--border);padding:10px 32px;font-size:12px;color:var(--blue);text-align:center;">
-  🔄 <strong>Automatikus frissítési szabály (v3.6):</strong> Minden munkamenet végén Claude automatikusan frissíti a Notiont, rögzíti az elvégzett fejlesztéseket "Kész" státusszal az adatbázisba, frissíti a dashboardot és a rendszerpromptot – kérdezés nélkül.
+<!-- PROJEKTEK -->
+<div class="section-title">Projektek & Iniciatívák</div>
+<div class="projects-grid">
+  <div class="proj-col">
+    <div class="proj-col-header folyamatban">🔄 Folyamatban</div>
+    <div class="proj-items" id="folyamatban-items">
+      <div class="loading">Betöltés...</div>
+    </div>
+  </div>
+  <div class="proj-col">
+    <div class="proj-col-header elvegzett">✅ Elvégzett fejlesztések</div>
+    <div class="proj-items" id="elvegzett-items">
+      <div class="proj-item" style="border-left:3px solid #5dade2; font-size:11px; color:var(--text-dim);">
+        ℹ️ A projekt-követés <strong>2026.06.05. 19:00-tól</strong> indul. Az előtte elvégzett fejlesztések a Notion Wikiben és a rendszerpromptban vannak dokumentálva.
+      </div>
+    </div>
+  </div>
+  <div class="proj-col">
+    <div class="proj-col-header parkolvan">⏸ Nem kezdett / Parkoló</div>
+    <div class="proj-items" id="parkolvan-items">
+      <div class="loading">Betöltés...</div>
+    </div>
+  </div>
 </div>
+
+<!-- KÖVETKEZŐ LÉPÉSEK -->
+<div class="steps-wrap">
+  <div class="steps-card">
+    <div class="card-title">🚀 Következő lépések</div>
+    <div class="step-item">
+      <div class="step-num">1</div>
+      <div class="step-text"><strong>IMAP csere Make.com-ban</strong> – Gmail modul → ajanlat1@rosas-group.com IMAP trigger az AI export ágban.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">2</div>
+      <div class="step-text"><strong>Import AI ág felépítése</strong> – export ág mintájára. Bevonandó: Pető Niki.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">3</div>
+      <div class="step-text"><strong>Vámkezelési adatok ellenőrzése + kitöltés-automatizálás</strong> – vezetői meetingen eldöntve. Bevonandó: Varga Csaba, Hugyecz József.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num new">4</div>
+      <div class="step-text"><strong>Q1 2026 főkönyv + statisztikák feltöltése</strong> – Nagy Mahin&aacute;tor export + 2025 Q1 összehasonlítás. <span class="step-badge new">🆕 Tervezett</span></div>
+    </div>
+    <div class="step-item">
+      <div class="step-num new">5</div>
+      <div class="step-text"><strong>Vámkezelési &amp; szállítmányozási Excel táblák elemzése</strong> – ügyfél-profitabilitás, haszonrés, áremelési alap. <span class="step-badge new">🆕 Tervezett</span></div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">6</div>
+      <div class="step-text"><strong>58 csali letöltő email sorozat</strong> – SalesAutopilot / Make.com. Bevonandó: Kaplonyi Aranka.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">7</div>
+      <div class="step-text"><strong>Termékismertető kérdőívek feldolgozása</strong> – Varga Cs., HJ, Albitz V., Csortos B. visszaérkezés után Claude integrálja Wiki-be.</div>
+    </div>
+    <div class="step-item">
+      <div class="step-num">8</div>
+      <div class="step-text"><strong>Ügyfél-profitabilitás elemzés + áremelés</strong> – 986 ügyfél a CRM-ben ✅ ellenőrizve. Következő: aktív/alvó szétválasztás, profitelemzés.</div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
 <div class="footer">
-  Rosas Logisztikai Kft. · Belső dashboard · <span id="footerDate"></span> · Minimális kockázat 🟢 · Rendszerprompt v3.6
+  Rosas Logisztikai Kft. · Belső dashboard · <a href="https://rosas-group.com" style="color:var(--rose-light);text-decoration:none;">rosas-group.com</a> · Minimális kockázat 🟢 · Rendszerprompt v3.8
+  <br><span style="font-size:10px;">🔄 Automatikus frissítési szabály (v3.6): Minden munkamenet végén Claude automatikusan frissíti a Notiont, rögzíti az elvégzett fejlesztéseket az adatbázisba, frissíti a dashboardot és a rendszerpromptot.</span>
 </div>
 
 <script>
-const PROXY='https://notion-proxy.sasgabor-sg.workers.dev';
-const DB_ID='220313732c03462d8332b860d0dd87e3';
+const PROXY = 'https://notion-proxy.sasgabor-sg.workers.dev';
+const DB_ID = '220313732c03462d8332b860d0dd87e3';
 
-// PROFIT CHART
-const chartData=[
-  {y:'2017',arb:332,uzemi:31},
-  {y:'2018',arb:285,uzemi:21},
-  {y:'2019',arb:296,uzemi:16},
-  {y:'2020',arb:307,uzemi:18},
-  {y:'2021',arb:474,uzemi:58},
-  {y:'2022',arb:652,uzemi:80},
-  {y:'2023',arb:446,uzemi:27},
-  {y:'2024',arb:513,uzemi:47},
-  {y:'2025',arb:550,uzemi:26},
+// CHART
+const chartData = [
+  {year:'2017', rev:332, op:31.6},
+  {year:'2018', rev:285, op:21.2},
+  {year:'2019', rev:296, op:15.8},
+  {year:'2020', rev:307, op:17.8},
+  {year:'2021', rev:474, op:57.6},
+  {year:'2022', rev:652, op:79.6},
+  {year:'2023', rev:446, op:26.9},
+  {year:'2024', rev:513, op:46.7},
+  {year:'2025', rev:550, op:26.3},
 ];
-const maxArb=Math.max(...chartData.map(d=>d.arb));
-const maxUzemi=Math.max(...chartData.map(d=>d.uzemi));
-const chartEl=document.getElementById('profitChart');
-chartData.forEach(d=>{
-  const arbH=Math.round((d.arb/maxArb)*90);
-  const uzemiH=Math.round((d.uzemi/maxUzemi)*90);
-  const isLast=d.y==='2025';
-  chartEl.innerHTML+=`<div class="chart-bar-group">
-    <div class="bar-pair">
-      <div class="bar bar-arb" style="height:${arbH}px;width:14px" title="${d.arb}M árbevétel"></div>
-      <div class="bar bar-uzemi" style="height:${uzemiH}px;width:14px;background:${isLast?'var(--rose)':'var(--green)'}" title="${d.uzemi}M üzemi eredmény"></div>
-    </div>
-    <div class="bar-year" style="color:${isLast?'var(--rose)':'var(--ink-light)'};font-weight:${isLast?700:400}">${d.y}</div>
-  </div>`;
+const maxRev = Math.max(...chartData.map(d=>d.rev));
+const maxOp = Math.max(...chartData.map(d=>d.op));
+const container = document.getElementById('chartContainer');
+chartData.forEach(d => {
+  const revPct = (d.rev / maxRev * 100).toFixed(1);
+  const opPct = (d.op / maxOp * 100).toFixed(1);
+  container.innerHTML += `
+    <div class="bar-row">
+      <div class="bar-year">${d.year}</div>
+      <div class="bar-track" style="height:28px;">
+        <div class="bar-fill-rev" style="width:${revPct}%; height:100%;"></div>
+        <div class="bar-fill-op" style="width:${opPct}%; height:50%; top:25%;"></div>
+      </div>
+      <div class="bar-val">${d.op} M</div>
+    </div>`;
 });
 
-// PROJECTS
-const PILLAR_COLORS={'Belső folyamatok':'badge-blue','Marketing':'badge-rose','Ügyfél-profitabilitás':'badge-amber'};
-function badge(text,cls){return`<span class="badge ${cls}">${text}</span>`;}
-function projectCard(p){
-  const props=p.properties;
-  const title=props['Neve']?.title?.[0]?.plain_text||'–';
-  const felelős=props['Felelős']?.rich_text?.[0]?.plain_text||'';
-  const pillér=props['Pillér']?.select?.name||'';
-  const határ=props['Határidő']?.date?.start||'';
-  const pillarCls=PILLAR_COLORS[pillér]||'badge-gray';
-  return`<div class="project-item">
-    <div class="project-item-title">${title}</div>
-    <div class="project-item-meta">
-      ${pillér?badge(pillér,pillarCls):''}
-      ${felelős?`<span>${felelős}</span>`:''}
-      ${határ?`<span>⏱ ${határ}</span>`:''}
-    </div>
-  </div>`;
-}
-async function loadProjects(){
-  try{
-    const res=await fetch(PROXY+'/notion/databases/'+DB_ID+'/query',{method:'POST',headers:{'Content-Type':'application/json','Notion-Version':'2022-06-28'},body:JSON.stringify({page_size:50})});
-    const data=await res.json();
-    const pages=data.results||[];
-    const inProgress=pages.filter(p=>p.properties['Státusz']?.select?.name==='Folyamatban');
-    const done=pages.filter(p=>p.properties['Státusz']?.select?.name==='Kész');
-    const parked=pages.filter(p=>{const s=p.properties['Státusz']?.select?.name;return s==='Nem kezdett'||s==='Blokkolt';});
-    const ipCol=document.getElementById('in-progress-col');
-    ipCol.innerHTML=inProgress.length?inProgress.map(projectCard).join(''):'<div style="padding:16px;color:var(--ink-light);font-size:12px;">Nincs aktív projekt</div>';
-    const doneCol=document.getElementById('done-col');
-    const doneNote='<div class="done-note">ℹ️ A projekt-követés <strong>2026.06.05. 19:00-tól</strong> indul. Az előtte elvégzett fejlesztések a Notion Wikiben dokumentáltak.</div>';
-    doneCol.innerHTML=doneNote+(done.length?done.map(projectCard).join(''):'');
-    const parkedCol=document.getElementById('parked-col');
-    parkedCol.innerHTML=parked.length?parked.map(projectCard).join(''):'<div style="padding:16px;color:var(--ink-light);font-size:12px;">Nincs parkoló projekt</div>';
-  }catch(e){
-    ['in-progress-col','parked-col'].forEach(id=>{const el=document.getElementById(id);if(el&&el.querySelector('.loading'))el.innerHTML='<div class="error-note">Nem sikerült betölteni a Notion adatokat.</div>';});
+// NOTION LOAD
+async function loadProjects() {
+  const statuses = [
+    { key: 'Folyamatban', el: 'folyamatban-items' },
+    { key: 'Kész', el: 'elvegzett-items', prepend: true },
+    { key: 'Nem kezdett', el: 'parkolvan-items' },
+  ];
+
+  for (const s of statuses) {
+    try {
+      const res = await fetch(PROXY + '/notion/databases/' + DB_ID + '/query', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          filter: { property: 'Státusz', select: { equals: s.key } },
+          sorts: [{ property: 'Határidő', direction: 'ascending' }],
+          page_size: 20
+        })
+      });
+      const data = await res.json();
+      const el = document.getElementById(s.el);
+      const results = data.results || [];
+
+      let html = '';
+      if (s.key === 'Kész') {
+        html = `<div class="proj-item" style="border-left:3px solid #5dade2; font-size:11px; color:var(--text-dim);">
+          ℹ️ A projekt-követés <strong>2026.06.05. 19:00-tól</strong> indul. Az előtte elvégzett fejlesztések a Notion Wikiben és a rendszerpromptban vannak dokumentálva.
+        </div>`;
+      }
+
+      if (results.length === 0 && s.key !== 'Kész') {
+        html += '<div class="proj-item" style="color:var(--text-dim);font-size:12px;font-style:italic;">Nincs elem</div>';
+      } else {
+        results.forEach(r => {
+          const title = r.properties?.Neve?.title?.[0]?.text?.content || '–';
+          const profit = r.properties?.['Profit hatás']?.select?.name || '';
+          const fazis = r.properties?.Fazis?.select?.name || r.properties?.['Fázis']?.select?.name || '';
+          html += `<div class="proj-item"><strong>${title}</strong>
+            ${profit ? `<div class="proj-note">💰 ${profit} ${fazis ? '· '+fazis : ''}</div>` : ''}
+          </div>`;
+        });
+      }
+      el.innerHTML = html;
+    } catch(e) {
+      document.getElementById(s.el).innerHTML = '<div class="proj-item" style="color:var(--text-dim);font-size:11px;">Betöltési hiba</div>';
+    }
   }
 }
-document.getElementById('footerDate').textContent=new Date().toLocaleDateString('hu-HU');
+
 loadProjects();
 </script>
 </body>
