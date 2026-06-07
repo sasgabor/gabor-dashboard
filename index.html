@@ -292,14 +292,20 @@ function extractText(block) {
 
 function parseCounters(blocks) {
   let cukor = null, liszt = null;
+  let inCounters = false;
   for (const block of blocks) {
     const text = extractText(block);
-    // Notion formátum: "🍬 Cukormentes napok \| 30 \| 2026.06.06." (backslash-escaped pipe)
-    if (text.match(/Cukormentes/i)) {
+    // Számlálók szekció kezdete
+    if (text.includes('Számlálók') || text.includes('SZÁMLÁLÓK')) { inCounters = true; continue; }
+    // Ha már túl vagyunk a szekción (következő heading), kilépünk
+    if (inCounters && (block.type === 'heading_2' || block.type === 'heading_1') && !text.includes('Számlálók')) break;
+    if (!inCounters) continue;
+    // Cella tartalmaz pipe-ot és számot: "🍬 Cukormentes napok \| 30 \| 2026.06.06."
+    if (text.match(/Cukormentes/i) && text.match(/\\?\|/)) {
       const m = text.match(/\\?\|\s*(\d+)\s*\\?\|/);
       if (m) cukor = parseInt(m[1]);
     }
-    if (text.match(/Lisztmentes/i)) {
+    if (text.match(/Lisztmentes/i) && text.match(/\\?\|/)) {
       const m = text.match(/\\?\|\s*(\d+)\s*\\?\|/);
       if (m) liszt = parseInt(m[1]);
     }
