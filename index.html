@@ -250,11 +250,11 @@ const EGESZSEG_PAGE_ID = '373a30954a74816d92eefbdd8b7922c8';
 const PROXY = 'https://notion-proxy.sasgabor-sg.workers.dev';
 
 const FALLBACK = {
-  cukor: 32, liszt: 22,
-  suly: 91.05, zsiger: 13, testzsir: 32.7, izom: 58.2, protein: 15.4, bmr: 1693,
-  feelfit_datum: '06.10.',
-  pulzus: 48, hrv: 44, alvas: 98, bojt: '17h11', bb_reggel: 72, vo2: 27, lepesek: 7333,
-  garmin_datum: '06.09.'
+  cukor: 34, liszt: 24,
+  suly: 92.45, zsiger: 14, testzsir: 32.0, izom: 59.7, protein: 15.5, bmr: 1727,
+  feelfit_datum: '06.18.',
+  pulzus: 53, hrv: 36, alvas: 48, bojt: '–', bb_reggel: 33, vo2: 27, lepesek: 6004,
+  garmin_datum: '06.17.'
 };
 
 const DAYS_HU = ['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
@@ -295,12 +295,9 @@ function parseCounters(blocks) {
   let inCounters = false;
   for (const block of blocks) {
     const text = extractText(block);
-    // Számlálók szekció kezdete
     if (text.includes('Számlálók') || text.includes('SZÁMLÁLÓK')) { inCounters = true; continue; }
-    // Ha már túl vagyunk a szekción (következő heading), kilépünk
     if (inCounters && (block.type === 'heading_2' || block.type === 'heading_1') && !text.includes('Számlálók')) break;
     if (!inCounters) continue;
-    // Cella tartalmaz pipe-ot és számot: "🍬 Cukormentes napok \| 30 \| 2026.06.06."
     if (text.match(/Cukormentes/i) && text.match(/\\?\|/)) {
       const m = text.match(/\\?\|\s*(\d+)\s*\\?\|/);
       if (m) cukor = parseInt(m[1]);
@@ -422,7 +419,7 @@ function showFallback(note) {
   document.getElementById('mai-cel').innerHTML = `
     🍬 Legyen ez a <strong>${FALLBACK.cukor+1}. cukormentes napod!</strong><br>
     🌾 Legyen ez a <strong>${FALLBACK.liszt+1}. lisztmentes napod!</strong><br>
-    ⏱️ Böjt cél: <strong>16h+</strong> &nbsp;·&nbsp; Zsigeri zsír tartás: <strong>${FALLBACK.zsiger} → stabil ✅</strong><br>
+    ⏱️ Böjt cél: <strong>16h+</strong> &nbsp;·&nbsp; Zsigeri zsír: <strong>${FALLBACK.zsiger} → vissza 13-ra!</strong><br>
     <span style="font-size:11px;color:var(--muted)">📌 Fallback mód – ${note}</span>
   `;
   renderNapirend(getDayType());
@@ -459,7 +456,7 @@ async function loadDashboard() {
     document.getElementById('mai-cel').innerHTML = `
       🍬 Legyen ez a <strong>${cukor+1}. cukormentes napod!</strong><br>
       🌾 Legyen ez a <strong>${liszt+1}. lisztmentes napod!</strong><br>
-      ⏱️ Böjt cél: <strong>16h+</strong> &nbsp;·&nbsp; Zsigeri zsír tartás: <strong>${health.zsiger||FALLBACK.zsiger} → stabil ✅</strong>
+      ⏱️ Böjt cél: <strong>16h+</strong> &nbsp;·&nbsp; Zsigeri zsír: <strong>${health.zsiger||FALLBACK.zsiger} → vissza 13-ra!</strong>
     `;
     renderNapirend(getDayType());
     document.getElementById('last-updated').textContent = `Utoljára frissítve: ${new Date().toLocaleTimeString('hu-HU')}`;
