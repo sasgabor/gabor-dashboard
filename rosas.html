@@ -87,7 +87,7 @@
 <div class="header">
   <div>
     <div class="header h1">🌹 Rosas Logisztikai Kft.</div>
-    <div class="sub">Frissítve: 2026.06.22. · Rendszerprompt v4.2 · KPI + Marketing + EU AI Act projektek aktívak</div>
+    <div class="sub">Frissítve: 2026.06.22. · Rendszerprompt v4.6 · KPI + Marketing + EU AI Act projektek aktívak</div>
   </div>
   <div style="text-align:right;color:#8DB4D9;font-size:12px;">AEO minősítés 2011 óta<br>Minimális kockázat 🟢</div>
 </div>
@@ -233,50 +233,44 @@
     <div class="grid-3">
       <div class="project-col">
         <h3>🔄 Folyamatban</h3>
-        <div id="proj-folyamatban"><div class="loading">Betöltés...</div></div>
+        <div class="project-card"><div class="proj-title">SHOEBOX áremelési tárgyalás előkészítése</div></div>
+        <div class="project-card"><div class="proj-title">Marketing átvétel (Facebook/LinkedIn/Ads)</div></div>
+        <div class="project-card"><div class="proj-title">Make.com Import ág felépítése</div></div>
+        <div class="project-card"><div class="proj-title">IMAP csere (export ág)</div></div>
+        <div class="project-card"><div class="proj-title">Nem nyereséges ügyfelek kezelése</div></div>
+        <div class="project-card"><div class="proj-title">EU AI Act & GDPR megfelelés</div></div>
       </div>
       <div class="project-col">
         <h3>✅ Elvégzett fejlesztések</h3>
         <div class="project-card done" style="border-left-color:#aaa;background:#f9f9f9;">
-          <div class="proj-title" style="color:#888;font-size:11px;">ℹ️ A projekt-követés 2026.06.05. 19:00-tól indul. Az előtte elvégzett fejlesztések a Notion Wikiben és a rendszerpromptban vannak dokumentálva.</div>
+          <div class="proj-title" style="color:#888;font-size:11px;">ℹ️ A 2026.06.05. előtti fejlesztések a Notion Wikiben és a rendszerpromptban vannak dokumentálva.</div>
         </div>
-        <div id="proj-kesz"><div class="loading">Betöltés...</div></div>
+        <div class="project-card done"><div class="proj-title">986 ügyfél feltöltve a Notion CRM-be</div></div>
+        <div class="project-card done"><div class="proj-title">Pénzügyi értékvesztés azonosítva (árfolyamveszteség)</div></div>
+        <div class="project-card done"><div class="proj-title">Vámkezelési + SPED Excel táblák elemzése</div></div>
+        <div class="project-card done"><div class="proj-title">Bérlista Excel Feldolgozó GPT – dokumentáció</div></div>
+        <div class="project-card done"><div class="proj-title">Bankszámlák (HUF×2, EUR, USD) elemzése</div></div>
+        <div class="project-card done"><div class="proj-title">2024/2025/2026 Q1 főkönyv – YoY elemzés</div></div>
+        <div class="project-card done"><div class="proj-title">Első LinkedIn + Facebook poszt élesítve</div></div>
       </div>
       <div class="project-col">
         <h3>⏸ Parkoló</h3>
-        <div id="proj-parkolo"><div class="loading">Betöltés...</div></div>
+        <div class="project-card parked"><div class="proj-title">Cloudflare Worker – élő Notion API kapcsolat</div></div>
+        <div class="project-card parked"><div class="proj-title">Honlap AI-keresőbaráttá alakítása</div></div>
+        <div class="project-card parked"><div class="proj-title">Ügyfél-onboarding folyamat standardizálása</div></div>
+        <div class="project-card parked"><div class="proj-title">Kapacitástervezés és csapatfejlesztés</div></div>
+        <div class="project-card parked"><div class="proj-title">Hosszútávú ügyfélmegtartási rendszer</div></div>
       </div>
     </div>
+    <div style="margin-top:10px;font-size:11px;color:var(--gray-mid);">Frissítve: 2026.06.22. (kézzel karbantartott lista – élő Notion-szinkron még nincs kiépítve)</div>
   </div>
 
 </div>
 
 <div class="footer">
-  Rosas Logisztikai Kft. · Belső dashboard · <a href="https://rosas-group.com" style="color:#8DB4D9;">rosas-group.com</a> · Minimális kockázat 🟢 · Rendszerprompt v4.2
+  Rosas Logisztikai Kft. · Belső dashboard · <a href="https://rosas-group.com" style="color:#8DB4D9;">rosas-group.com</a> · Minimális kockázat 🟢 · Rendszerprompt v4.6
 </div>
 
-<script>
-const PROXY='https://notion-proxy.sasgabor-sg.workers.dev';
-const DB_ID='220313732c03462d8332b860d0dd87e3';
-async function loadProjects(status,containerId){
-  try{
-    const res=await fetch(PROXY+'/notion/databases/'+DB_ID+'/query',{
-      method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({filter:{property:'Státusz',select:{equals:status}},sorts:[{property:'Neve',direction:'ascending'}]})
-    });
-    const data=await res.json();
-    const container=document.getElementById(containerId);
-    if(!data.results||data.results.length===0){container.innerHTML='<div class="loading">Nincs adat</div>';return;}
-    container.innerHTML=data.results.map(p=>{
-      const title=p.properties?.Neve?.title?.[0]?.plain_text||'–';
-      const isDone=status==='Kész';
-      return `<div class="project-card ${isDone?'done':status==='Parkoló'||status==='Nem kezdett'?'parked':''}"><div class="proj-title">${title}</div></div>`;
-    }).join('');
-  }catch(e){document.getElementById(containerId).innerHTML='<div class="loading">Betöltési hiba</div>';}
-}
-loadProjects('Folyamatban','proj-folyamatban');
-loadProjects('Kész','proj-kesz');
-loadProjects('Parkoló','proj-parkolo');
-</script>
+
 </body>
 </html>

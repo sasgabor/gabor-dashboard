@@ -41,7 +41,7 @@ Céges belső dashboard a Rosas Logisztikai Kft. számára.
 - EU AI Act & GDPR megfelelési projekt státusza
 - Projektek & Iniciatívák (élő Notion adatbázis-lekérdezés)
 
-**Adatforrás:** Notion *Iniciatívák & Projektek* adatbázis (élő lekérdezés a böngészőben, Cloudflare Worker proxy-n keresztül), a többi szekció statikusan generált tartalom.
+**Adatforrás:** A Projektek & Iniciatívák szekció jelenleg **kézzel karbantartott statikus lista** (az élő Notion-lekérdezés a Cloudflare Worker hiánya miatt nem működött – ld. Changelog). A többi szekció statikusan generált tartalom.
 
 **Frissítési protokoll:** lásd a `rosas-dashboard` Skill-t (minden munkamenet végén automatikusan ellenőrzendő, kell-e frissítés).
 
@@ -74,6 +74,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum | Fájl | Mi változott |
 |-------|------|---------------|
+| 2026.06.22. | rosas.html | Projektek & Iniciatívák szekció statikus listára váltva (a Cloudflare Worker élő Notion-kapcsolat még nem épült meg, ezért "Nincs adat" jelent meg minden oszlopban – javítva) |
 | 2026.06.22. | rosas.html | EU AI Act & GDPR megfelelési kártya hozzáadva; verzió v4.2 |
 | 2026.06.09. | rosas.html | Marketing átvétel projekt + 2026 Q1 pénzügyi adatok hozzáadva; verzió v4.0 |
 | 2026.06.08. | rosas.html | KPI Projekt szekció hozzáadva (20%-os nyereségnövekedés) |
