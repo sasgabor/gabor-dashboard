@@ -73,15 +73,29 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 ## 📝 Changelog
 
-| Dátum | Fájl | Mi változott |
-|-------|------|---------------|
-| 2026.06.23. | index.html | Architektúra-átalakítás: a régi, szétszórt kulcsszó-kereséses parser (`parseCounters`/`parseHealthData`) helyett egyetlen, a Notion canonical táblára (📌 Legfrissebb ismert adatok) célzott parser (`parseCanonicalTable`/`mapCanonicalRows`), egységes `renderDashboard()` élő és fallback esetre egyaránt (nincs többé külön, szétcsúszható kódág). `getPageBlocks()` egy szintet lemegy a gyerek-blokkokba is. |
-| 2026.06.23. | index.html | Biztonsági javítás: eltávolítva a kliens-oldali NOTION_TOKEN konstans (nyílt szövegben szerepelt egy publikus repóban, funkcionálisan nem is volt szükséges). Hozzáadva: 📌-jelzés akkor is, ha a fő Notion-lekérdezés sikeres, de egy konkrét mező (streak, Feelfit vagy Garmin dátum) mégis fallback-re esett vissza – korábban ez csendben történt, élő adatnak álcázva. |
-| 2026.06.23. | README.md | Frissítve az `index.html` "Utolsó frissítés" dátuma (a táblázat hónapokig elmaradt a valóságtól); javítva a Notion token elhelyezéséről szóló (akkor már nem igaz) állítás; jelzés a nyitott Worker-proxy kockázatáról. |
-| 2026.06.18. (utólag rögzítve) | index.html | FALLBACK adatok frissítve a 06.17–06.18-i Feelfit/Garmin/számláló adatokra – ez a frissítés korábban nem került be ide, csak a fájlba. |
-| 2026.06.22. | rosas.html | Projektek & Iniciatívák szekció statikus listára váltva (a Cloudflare Worker élő Notion-kapcsolat még nem épült meg, ezért "Nincs adat" jelent meg minden oszlopban – javítva) |
-| 2026.06.22. | rosas.html | EU AI Act & GDPR megfelelési kártya hozzáadva; verzió v4.2 |
-| 2026.06.09. | rosas.html | Marketing átvétel projekt + 2026 Q1 pénzügyi adatok hozzáadva; verzió v4.0 |
-| 2026.06.08. | rosas.html | KPI Projekt szekció hozzáadva (20%-os nyereségnövekedés) |
-| 2026.06.06. | index.html | Fallback értékek frissítve (Feelfit + Garmin adatok) |
-| – | README.md | Létrehozva (korábban csak cím szerepelt benne) |
+> ⚠️ 2026.06.23-tól két külön blokkban (Gábor OS / Rosas) — ne keverd időrendben egy közös táblázatba, mert úgy nehéz észrevenni, ha az egyik projekt changelog-ja elmaradt.
+
+### Gábor OS (`index.html`)
+
+| Dátum | Mi változott |
+|-------|---------------|
+| 2026.06.23. | Architektúra-átalakítás: a régi, szétszórt kulcsszó-kereséses parser (`parseCounters`/`parseHealthData`) helyett egyetlen, a Notion canonical táblára (📌 Legfrissebb ismert adatok) célzott parser (`parseCanonicalTable`/`mapCanonicalRows`), egységes `renderDashboard()` élő és fallback esetre egyaránt (nincs többé külön, szétcsúszható kódág). `getPageBlocks()` egy szintet lemegy a gyerek-blokkokba is. |
+| 2026.06.23. | Biztonsági javítás: eltávolítva a kliens-oldali NOTION_TOKEN konstans (nyílt szövegben szerepelt egy publikus repóban, funkcionálisan nem is volt szükséges). Hozzáadva: 📌-jelzés akkor is, ha a fő Notion-lekérdezés sikeres, de egy konkrét mező (streak, Feelfit vagy Garmin dátum) mégis fallback-re esett vissza – korábban ez csendben történt, élő adatnak álcázva. |
+| 2026.06.18. (utólag rögzítve) | FALLBACK adatok frissítve a 06.17–06.18-i Feelfit/Garmin/számláló adatokra – ez a frissítés korábban nem került be ide, csak a fájlba. |
+| 2026.06.06. | Fallback értékek frissítve (Feelfit + Garmin adatok) |
+
+### Rosas (`rosas.html`)
+
+| Dátum | Mi változott |
+|-------|---------------|
+| 2026.06.22. | Projektek & Iniciatívák szekció statikus listára váltva (a Cloudflare Worker élő Notion-kapcsolat még nem épült meg, ezért "Nincs adat" jelent meg minden oszlopban – javítva) |
+| 2026.06.22. | EU AI Act & GDPR megfelelési kártya hozzáadva; verzió v4.2 |
+| 2026.06.09. | Marketing átvétel projekt + 2026 Q1 pénzügyi adatok hozzáadva; verzió v4.0 |
+| 2026.06.08. | KPI Projekt szekció hozzáadva (20%-os nyereségnövekedés) |
+
+### README.md
+
+| Dátum | Mi változott |
+|-------|---------------|
+| 2026.06.23. | Frissítve az `index.html` "Utolsó frissítés" dátuma (a táblázat hónapokig elmaradt a valóságtól); javítva a Notion token elhelyezéséről szóló (akkor már nem igaz) állítás; jelzés a nyitott Worker-proxy kockázatáról; changelog két külön blokkra bontva (Gábor OS / Rosas). |
+| – | Létrehozva (korábban csak cím szerepelt benne) |
