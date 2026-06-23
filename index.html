@@ -16,6 +16,15 @@
   }
 })();
 </script>
+<!--
+  GÁBOR OS DASHBOARD — szinkron infó (ne töröld, ez a verzió-egyeztetéshez kell)
+  Rendszerprompt verzió ennek a fájlnak a generálásakor: v3.7
+  Architektúra (2026.06.23-tól): a dashboard MINDEN adatot egyetlen Notion-táblából olvas
+  élőben ("📌 Legfrissebb ismert adatok" szekció az Egészség & Életmód oldal tetején).
+  A FALLBACK konstans csak vészhelyzeti (Notion-kiesés esetén megjelenő) biztonsági másolat —
+  nem kell minden adatfrissítésnél bumpolni, elég ha alkalmanként frissül.
+  Fájl generálva / utoljára átnézve: 2026.06.23.
+-->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Gábor OS – Személyes Dashboard</title>
@@ -245,7 +254,13 @@
 </div>
 
 <script>
-const NOTION_TOKEN = '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';
+// ⚠️ BIZTONSÁGI JAVÍTÁS (2026.06.23.): a korábbi verzióban itt egy valódi Notion token
+// szerepelt nyílt szövegben (NOTION_TOKEN). Ez egy publikus GitHub repóban bárki számára
+// olvasható volt forráskód-szinten (pl. raw.githubusercontent.com-on, jelszó-prompt nélkül).
+// A Cloudflare Worker a kimenő Notion-hívásnál saját env.NOTION_TOKEN secret-jét használja,
+// a kliens által küldött Authorization fejléket figyelmen kívül hagyja — tehát ez a token
+// itt funkcionálisan nem is volt szükséges, csak feleslegesen exponálva volt. Töröld a
+// Notion integrations oldalon és generálj újat, ha még nem tetted meg.
 const EGESZSEG_PAGE_ID = '373a30954a74816d92eefbdd8b7922c8';
 const PROXY = 'https://notion-proxy.sasgabor-sg.workers.dev';
 
@@ -268,7 +283,6 @@ function today() {
 async function notionFetch(endpoint) {
   const r = await fetch(`${PROXY}/notion/${endpoint}`, {
     headers: {
-      'Authorization': `Bearer ${NOTION_TOKEN}`,
       'Notion-Version': '2022-06-28',
       'Content-Type': 'application/json'
     }
@@ -277,67 +291,71 @@ async function notionFetch(endpoint) {
   return await r.json();
 }
 
+// Egy szinttel lejjebb is lemegyünk azoknál a blokkoknál, amiknek van gyerekük
+// (pl. egy valódi Notion-tábla table_row-jai a 'table' blokk gyerekei, nem a
+// lap saját gyerekei — enélkül a parser sosem látná a táblasorokat).
 async function getPageBlocks(pageId) {
   const data = await notionFetch(`blocks/${pageId}/children?page_size=100`);
-  return data.results || [];
+  const top = data.results || [];
+  const expanded = [];
+  for (const block of top) {
+    expanded.push(block);
+    if (block.has_children) {
+      try {
+        const child = await notionFetch(`blocks/${block.id}/children?page_size=100`);
+        expanded.push(...(child.results || []));
+      } catch (e) { /* egy gyerek-lekérdezés hibája ne dobja el az egész oldalt */ }
+    }
+  }
+  return expanded;
 }
 
 function extractText(block) {
   const type = block.type;
   const content = block[type];
   if (!content) return '';
+  if (type === 'table_row' && content.cells) {
+    return content.cells.map(cell => cell.map(r => r.plain_text || '').join('')).join(' | ');
+  }
   const rich = content.rich_text || content.text || [];
   return rich.map(r => r.plain_text || '').join('');
 }
 
-function parseCounters(blocks) {
-  let cukor = null, liszt = null;
-  let inCounters = false;
+// ⚠️ EGYETLEN HITELES FORRÁS (2026.06.23-tól): minden élő adat KIZÁRÓLAG a Notion
+// Egészség & Életmód oldal "📌 Legfrissebb ismert adatok" táblájából jön. Ez a
+// függvény NEM keresgél kulcsszavakat az egész lapon (az volt a régi, törékeny
+// módszer) — csak ezt az egy szekciót olvassa be, sor-struktúrában (Mutató | Érték | Dátum),
+// és működik mind valódi Notion-táblasorral, mind egyszerű "Label | Érték | Dátum" szöveggel.
+function parseCanonicalTable(blocks) {
+  let inSection = false;
+  const rows = [];
   for (const block of blocks) {
+    const isHeading = block.type === 'heading_1' || block.type === 'heading_2' || block.type === 'heading_3';
     const text = extractText(block);
-    if (text.includes('Számlálók') || text.includes('SZÁMLÁLÓK')) { inCounters = true; continue; }
-    if (inCounters && (block.type === 'heading_2' || block.type === 'heading_1') && !text.includes('Számlálók')) break;
-    if (!inCounters) continue;
-    if (text.match(/Cukormentes/i) && text.match(/\\?\|/)) {
-      const m = text.match(/\\?\|\s*(\d+)\s*\\?\|/);
-      if (m) cukor = parseInt(m[1]);
-    }
-    if (text.match(/Lisztmentes/i) && text.match(/\\?\|/)) {
-      const m = text.match(/\\?\|\s*(\d+)\s*\\?\|/);
-      if (m) liszt = parseInt(m[1]);
-    }
-    if (cukor && liszt) break;
+    if (isHeading && /Legfrissebb ismert adatok/i.test(text)) { inSection = true; continue; }
+    if (inSection && isHeading) break;
+    if (!inSection) continue;
+    const m = text.match(/^\s*([^|]+?)\s*\\?\|\s*([^|]+?)\s*\\?\|\s*([^|]+?)\s*\\?\|?\s*$/);
+    if (m) rows.push({ label: m[1].trim(), value: m[2].trim(), date: m[3].trim() });
   }
-  if (!cukor) cukor = FALLBACK.cukor;
-  if (!liszt) liszt = FALLBACK.liszt;
-  return { cukor, liszt };
+  return rows;
 }
 
-function parseHealthData(blocks) {
-  const data = { suly:null,zsiger:null,testzsir:null,izom:null,protein:null,bmr:null,pulzus:null,hrv:null,lepesek:null,alvas:null,bojt:null,bb_reggel:null,vo2:null,feelfit_date:null,garmin_date:null };
-  for (const block of blocks) {
-    const text = extractText(block);
-    if (text.match(/Testsúly|Testsuly/i) && !data.suly) {
-      const m = text.match(/(\d+[\.,]\d+)\s*kg/); if (m) data.suly = parseFloat(m[1].replace(',','.'));
-      const dm = text.match(/(\d{4}\.\d{2}\.\d{2})/); if (dm && !data.feelfit_date) data.feelfit_date = dm[1];
-    }
-    if (text.match(/Zsigeri zsír|Zsigeri zsir/i) && !data.zsiger) { const m = text.match(/(\d+)/); if (m) data.zsiger = parseInt(m[1]); }
-    if (text.match(/Testzsír%|Testzsir%/i) && !data.testzsir) { const m = text.match(/(\d+[\.,]\d+)%/); if (m) data.testzsir = parseFloat(m[1].replace(',','.')); }
-    if (text.match(/Izomtömeg|Izomtomeg/i) && !data.izom) { const m = text.match(/(\d+[\.,]?\d*)\s*kg/); if (m) data.izom = parseFloat(m[1].replace(',','.')); }
-    if (text.match(/Protein%/i) && !data.protein) { const m = text.match(/(\d+[\.,]\d+)%/); if (m) data.protein = parseFloat(m[1].replace(',','.')); }
-    if (text.match(/BMR/i) && !data.bmr) { const m = text.match(/(\d{3,4})\s*kcal/); if (m) data.bmr = parseInt(m[1]); }
-    if (text.match(/Ny\.\s*pulzus|Nyugalmi pulzus/i) && !data.pulzus) {
-      const m = text.match(/(\d+)\s*bpm/); if (m) data.pulzus = parseInt(m[1]);
-      const dm = text.match(/(\d{4}\.\d{2}\.\d{2})/); if (dm && !data.garmin_date) data.garmin_date = dm[1];
-    }
-    if (text.match(/HRV 7 napos/i) && !data.hrv) { const m = text.match(/(\d+[\.,]?\d*)/g); if (m) data.hrv = parseFloat(m[m.length-1].replace(',','.')); }
-    if (text.match(/Lépések|Lepesek|lépés/i) && !data.lepesek) { const m = text.match(/(\d[\d ]*)/); if (m) data.lepesek = parseInt(m[1].replace(/\s/g,'')); }
-    if (text.match(/Alváspontszám|Alvaspontszam/i) && !data.alvas) { const m = text.match(/(\d+)/); if (m) data.alvas = parseInt(m[1]); }
-    if (text.match(/Böjt.*?h|böjt.*?h/i) && !data.bojt) { const m = text.match(/~?(\d+h\d*|\d+[\.,]\d+h)/i); if (m) data.bojt = m[1]; }
-    if (text.match(/BB reggel/i) && !data.bb_reggel) { const m = text.match(/(\d+)/); if (m) data.bb_reggel = parseInt(m[1]); }
-    if (text.match(/VO2max/i) && !data.vo2) { const m = text.match(/(\d+)/); if (m) data.vo2 = parseInt(m[1]); }
+function mapCanonicalRows(rows) {
+  const num = (s) => { const m = (s || '').match(/-?\d+[.,]?\d*/); return m ? parseFloat(m[0].replace(',', '.')) : null; };
+  const find = (re) => rows.find(r => re.test(r.label));
+  const fieldTests = {
+    suly: /Testsúly/i, zsiger: /Zsigeri zsír/i, testzsir: /Testzsír/i, izom: /Izomtömeg/i,
+    protein: /Protein/i, bmr: /BMR/i, pulzus: /pulzus/i, hrv: /HRV/i,
+    lepesek: /lépés/i, alvas: /Alváspontszám/i, bb_reggel: /BB reggel/i,
+    cukor: /Cukormentes/i, liszt: /Lisztmentes/i
+  };
+  const out = {};
+  for (const [key, re] of Object.entries(fieldTests)) {
+    const row = find(re);
+    if (row) out[key] = { raw: row.value, num: num(row.value), date: row.date };
   }
-  return data;
+  return out;
 }
 
 function getDayType() {
@@ -397,75 +415,83 @@ function renderGarmin(data) {
   document.getElementById('garmin-metrics').innerHTML = metrics.map(m => `<div class="metric-row"><span class="metric-label">${m.label}</span><div class="metric-right"><span class="metric-value">${m.value}</span><div class="dot ${m.dot}"></div></div></div>`).join('');
 }
 
-function showFallback(note) {
-  document.getElementById('cukor-szam').textContent = FALLBACK.cukor;
-  document.getElementById('liszt-szam').textContent = FALLBACK.liszt;
-  document.getElementById('cukor-sub').textContent = `→ ma a ${FALLBACK.cukor+1}. lehet!`;
-  document.getElementById('liszt-sub').textContent = `→ ma a ${FALLBACK.liszt+1}. lehet!`;
-  document.getElementById('feelfit-date').textContent = `${FALLBACK.feelfit_datum} 📌`;
-  document.getElementById('suly-val').textContent = `${FALLBACK.suly} → 79.9 kg`;
+// Egységes renderelő: akár élő Notion-adatból, akár FALLBACK-ből jön a `fields`,
+// UGYANEZ a függvény rajzolja ki a dashboardot. Nincs külön "élő" és "fallback" kódág,
+// ami egymástól eltérhetne — ez pontosan az ismétlődő hibák egyik fő oka volt.
+function renderDashboard(fields, opts) {
+  const cukor = fields.cukor ? fields.cukor.num : FALLBACK.cukor;
+  const liszt = fields.liszt ? fields.liszt.num : FALLBACK.liszt;
+  const cukorLive = !!fields.cukor;
+  const lisztLive = !!fields.liszt;
+  document.getElementById('cukor-szam').textContent = cukor;
+  document.getElementById('liszt-szam').textContent = liszt;
+  document.getElementById('cukor-sub').textContent = cukorLive ? `→ ma a ${cukor+1}. lehet!` : `→ ma a ${cukor+1}. lehet! · 📌 utolsó ismert`;
+  document.getElementById('liszt-sub').textContent = lisztLive ? `→ ma a ${liszt+1}. lehet!` : `→ ma a ${liszt+1}. lehet! · 📌 utolsó ismert`;
+
+  const feelfitDate = fields.suly ? fields.suly.date : FALLBACK.feelfit_datum;
+  const feelfitLive = !!fields.suly;
+  document.getElementById('feelfit-date').textContent = feelfitLive ? feelfitDate : `${feelfitDate} 📌`;
+  document.getElementById('suly-val').textContent = `${fields.suly ? fields.suly.num : FALLBACK.suly} → 79.9 kg`;
   document.getElementById('suly-bar').style.width = '55%';
-  document.getElementById('zsiger-val').textContent = `${FALLBACK.zsiger} → 7–8`;
+  document.getElementById('zsiger-val').textContent = `${fields.zsiger ? fields.zsiger.num : FALLBACK.zsiger} → 7–8`;
   document.getElementById('zsiger-bar').style.width = '65%';
-  document.getElementById('testzsir-val').textContent = `${FALLBACK.testzsir}% → 25%`;
+  document.getElementById('testzsir-val').textContent = `${fields.testzsir ? fields.testzsir.num : FALLBACK.testzsir}% → 25%`;
   document.getElementById('testzsir-bar').style.width = '80%';
-  document.getElementById('izom-val').textContent = `${FALLBACK.izom} kg ↑`;
-  document.getElementById('garmin-date').textContent = `${FALLBACK.garmin_datum} 📌`;
-  renderGarmin(FALLBACK);
+  document.getElementById('izom-val').textContent = `${fields.izom ? fields.izom.num : FALLBACK.izom} kg ↑`;
+
+  const garminDate = fields.pulzus ? fields.pulzus.date : FALLBACK.garmin_datum;
+  const garminLive = !!fields.pulzus;
+  document.getElementById('garmin-date').textContent = garminLive ? garminDate : `${garminDate} 📌`;
+  renderGarmin({
+    pulzus: fields.pulzus ? fields.pulzus.num : FALLBACK.pulzus,
+    hrv: fields.hrv ? fields.hrv.num : FALLBACK.hrv,
+    alvas: fields.alvas ? fields.alvas.num : FALLBACK.alvas,
+    bojt: FALLBACK.bojt, // a böjt nincs a kanonikus táblában, mindig a napi naplóból kellene, ezért itt mindig az utolsó ismert
+    bb_reggel: fields.bb_reggel ? fields.bb_reggel.num : FALLBACK.bb_reggel,
+    vo2: FALLBACK.vo2, // a VO2max sincs a kanonikus táblában (szándékosan)
+    lepesek: fields.lepesek ? fields.lepesek.num : FALLBACK.lepesek
+  });
   document.getElementById('merleg-details').innerHTML = `
-    <div class="metric-row"><span class="metric-label">Protein</span><span class="metric-value">${FALLBACK.protein}%</span></div>
-    <div class="metric-row"><span class="metric-label">BMR</span><span class="metric-value">${FALLBACK.bmr} kcal</span></div>
+    <div class="metric-row"><span class="metric-label">Protein</span><span class="metric-value">${fields.protein ? fields.protein.num : FALLBACK.protein}%</span></div>
+    <div class="metric-row"><span class="metric-label">BMR</span><span class="metric-value">${fields.bmr ? fields.bmr.num : FALLBACK.bmr} kcal</span></div>
   `;
+  const zsigerVal = fields.zsiger ? fields.zsiger.num : FALLBACK.zsiger;
   document.getElementById('mai-cel').innerHTML = `
-    🍬 Legyen ez a <strong>${FALLBACK.cukor+1}. cukormentes napod!</strong><br>
-    🌾 Legyen ez a <strong>${FALLBACK.liszt+1}. lisztmentes napod!</strong><br>
-    ⏱️ Böjt cél: <strong>16h+</strong> &nbsp;·&nbsp; Zsigeri zsír: <strong>${FALLBACK.zsiger} → vissza 13-ra!</strong><br>
-    <span style="font-size:11px;color:var(--muted)">📌 Fallback mód – ${note}</span>
+    🍬 Legyen ez a <strong>${cukor+1}. cukormentes napod!</strong><br>
+    🌾 Legyen ez a <strong>${liszt+1}. lisztmentes napod!</strong><br>
+    ⏱️ Böjt cél: <strong>16h+</strong> &nbsp;·&nbsp; Zsigeri zsír: <strong>${zsigerVal} → vissza 13-ra!</strong>
+    ${opts.fullyLive ? '' : `<br><span style="font-size:11px;color:var(--muted)">📌 ${opts.note}</span>`}
   `;
   renderNapirend(getDayType());
-  document.getElementById('last-updated').textContent = `📌 Fallback mód · ${new Date().toLocaleTimeString('hu-HU')} · ${note}`;
+  document.getElementById('last-updated').textContent = opts.fullyLive
+    ? `Utoljára frissítve: ${new Date().toLocaleTimeString('hu-HU')} · minden adat élő Notion-lekérdezésből`
+    : `Utoljára frissítve: ${new Date().toLocaleTimeString('hu-HU')} · 📌 ${opts.note}`;
   document.getElementById('loading').style.display = 'none';
   document.getElementById('dashboard').style.display = 'block';
   document.getElementById('dashboard').classList.add('fade-in');
 }
 
 async function loadDashboard() {
+  document.getElementById('header-date').textContent = today();
   try {
-    document.getElementById('header-date').textContent = today();
     const blocks = await getPageBlocks(EGESZSEG_PAGE_ID);
-    const { cukor, liszt } = parseCounters(blocks);
-    document.getElementById('cukor-szam').textContent = cukor;
-    document.getElementById('liszt-szam').textContent = liszt;
-    document.getElementById('cukor-sub').textContent = `→ ma a ${cukor+1}. lehet!`;
-    document.getElementById('liszt-sub').textContent = `→ ma a ${liszt+1}. lehet!`;
-    const health = parseHealthData(blocks);
-    document.getElementById('feelfit-date').textContent = health.feelfit_date || FALLBACK.feelfit_datum;
-    document.getElementById('suly-val').textContent = `${health.suly||FALLBACK.suly} → 79.9 kg`;
-    document.getElementById('suly-bar').style.width = '55%';
-    document.getElementById('zsiger-val').textContent = `${health.zsiger||FALLBACK.zsiger} → 7–8`;
-    document.getElementById('zsiger-bar').style.width = '65%';
-    document.getElementById('testzsir-val').textContent = `${health.testzsir||FALLBACK.testzsir}% → 25%`;
-    document.getElementById('testzsir-bar').style.width = '80%';
-    document.getElementById('izom-val').textContent = `${health.izom||FALLBACK.izom} kg ↑`;
-    document.getElementById('garmin-date').textContent = health.garmin_date || FALLBACK.garmin_datum;
-    renderGarmin({ pulzus:health.pulzus||FALLBACK.pulzus, hrv:health.hrv||FALLBACK.hrv, alvas:health.alvas||FALLBACK.alvas, bojt:health.bojt||FALLBACK.bojt, bb_reggel:health.bb_reggel||FALLBACK.bb_reggel, vo2:health.vo2||FALLBACK.vo2, lepesek:health.lepesek||FALLBACK.lepesek });
-    document.getElementById('merleg-details').innerHTML = `
-      <div class="metric-row"><span class="metric-label">Protein</span><span class="metric-value">${health.protein||FALLBACK.protein}%</span></div>
-      <div class="metric-row"><span class="metric-label">BMR</span><span class="metric-value">${health.bmr||FALLBACK.bmr} kcal</span></div>
-    `;
-    document.getElementById('mai-cel').innerHTML = `
-      🍬 Legyen ez a <strong>${cukor+1}. cukormentes napod!</strong><br>
-      🌾 Legyen ez a <strong>${liszt+1}. lisztmentes napod!</strong><br>
-      ⏱️ Böjt cél: <strong>16h+</strong> &nbsp;·&nbsp; Zsigeri zsír: <strong>${health.zsiger||FALLBACK.zsiger} → vissza 13-ra!</strong>
-    `;
-    renderNapirend(getDayType());
-    document.getElementById('last-updated').textContent = `Utoljára frissítve: ${new Date().toLocaleTimeString('hu-HU')}`;
-    document.getElementById('loading').style.display = 'none';
-    document.getElementById('dashboard').style.display = 'block';
-    document.getElementById('dashboard').classList.add('fade-in');
+    const rows = parseCanonicalTable(blocks);
+    if (rows.length === 0) {
+      // A kanonikus táblát nem találtuk (átnevezték a szekciót, vagy üres) – ugyanúgy
+      // fallback-ként kezeljük, mint egy API-hibát, csak más a hibaüzenet.
+      renderDashboard({}, { fullyLive: false, note: 'a kanonikus Notion-tábla nem található, az utolsó ismert (beégetett) adatokat látod' });
+      return;
+    }
+    const fields = mapCanonicalRows(rows);
+    const expectedKeys = ['suly','zsiger','testzsir','izom','protein','bmr','pulzus','hrv','lepesek','alvas','bb_reggel','cukor','liszt'];
+    const missing = expectedKeys.filter(k => !fields[k]);
+    renderDashboard(fields, {
+      fullyLive: missing.length === 0,
+      note: missing.length ? `a kanonikus táblából néhány mező nem volt kiolvasható (${missing.join(', ')}), azoknál az utolsó ismert érték látható` : ''
+    });
   } catch(err) {
     console.warn('Notion API hiba, fallback:', err.message);
-    showFallback('Notion API nem elérhető');
+    renderDashboard({}, { fullyLive: false, note: 'Notion API nem elérhető' });
   }
 }
 

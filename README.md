@@ -12,9 +12,9 @@ Két élő, statikus HTML dashboard, GitHub Pages-en hosztolva. Mindkettő Notio
 
 | Fájl | Mit csinál | Utolsó frissítés |
 |------|-----------|-------------------|
-| `index.html` | Gábor OS – személyes önfejlesztési dashboard (Feelfit, Garmin, streak-ek, napirend) | 2026.06.06. |
+| `index.html` | Gábor OS – személyes önfejlesztési dashboard (Feelfit, Garmin, streak-ek, napirend) | 2026.06.23. |
 | `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR) | 2026.06.22. |
-| `README.md` | Ez a fájl | 2026.06.22. |
+| `README.md` | Ez a fájl | 2026.06.23. |
 
 ---
 
@@ -24,9 +24,9 @@ Személyes egészség- és önfejlesztési dashboard.
 
 **Tartalma:** napi streak-ek (cukor-, lisztmentes napok), Feelfit testösszetétel-adatok, Garmin élettani mutatók (pulzus, HRV, alvás, böjt), napi cél-üzenet, napirend.
 
-**Adatforrás:** Notion *Egészség & Életmód* oldal, `parseCounters()` függvény olvassa ki a Számlálók szekciót. Ha a Notion API nem elérhető, a dashboard fallback módra vált beégetett, legutóbb ismert értékekkel – ezeket minden generálásnál frissíteni kell.
+**Adatforrás:** Notion *Egészség & Életmód* oldal, kizárólag a lap tetején lévő **"📌 Legfrissebb ismert adatok"** canonical táblából, `parseCanonicalTable()` + `mapCanonicalRows()` olvassa ki élőben (2026.06.23-tól — korábban szétszórt kulcsszó-kereséssel az egész lapon, ez törékeny volt). Ha a Notion API nem elérhető, a dashboard fallback módra vált beégetett, legutóbb ismert értékekkel, 📌-jelzéssel — ezt NEM kell minden adatfrissítésnél bumpolni, csak alkalmanként.
 
-**Frissítési protokoll:** lásd a `gabor-dashboard` Skill-t (napi adatfeldolgozás után automatikusan frissítendő).
+**Frissítési protokoll:** lásd a `gabor-dashboard` Skill-t. Napi adatfeldolgozás után NEM kell automatikusan újragenerálni — a dashboard élőben olvas a Notion canonical tábláról.
 
 ---
 
@@ -54,8 +54,9 @@ Böngésző → Cloudflare Worker (notion-proxy) → Notion API → vissza
 ```
 
 - **Cloudflare Worker:** `https://notion-proxy.sasgabor-sg.workers.dev`
-- **Notion token:** csak a Cloudflare Worker Secrets-ben tárolva, sosem a HTML-ben
+- **Notion token:** csak a Cloudflare Worker Secrets-ben tárolva, sosem a HTML-ben *(2026.06.23-tól: korábban az `index.html`-ben is szerepelt egy kliens-oldali NOTION_TOKEN konstans nyílt szövegben, ami egy publikus repóban bárki számára olvasható volt — eltávolítva, ld. Changelog. A Worker a kimenő Notion-hívásnál mindig a saját env.NOTION_TOKEN secret-jét használja, a kliens által küldött fejléket figyelmen kívül hagyja.)*
 - ⚠️ A Notion integrations oldal megnyitása (Show gomb) regenerálja és érvényteleníti a tokent – csak akkor nyisd meg, ha valóban szükséges
+- ⚠️ **Nyitott proxy:** a Worker jelenleg nem ellenőrzi, ki hívja – bárki, aki ismeri a Worker URL-t, közvetlenül tud Notion API-hívásokat indítani rajta keresztül (olvasás ÉS írás is, mert a Worker minden HTTP metódust továbbenged). Mivel az URL nyilvánosan elérhető (a dashboard forráskódjában is szerepel), ez egy nyitott kapu a teljes Notion workspace-hez. Érdemes megfontolni egy megosztott titkos fejlék (pl. egyéni `X-Dashboard-Key` header) hozzáadását a Workerhez, amit csak a dashboard ismer és a Worker ellenőriz, mielőtt továbbítja a kérést.
 
 ---
 
@@ -74,6 +75,10 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum | Fájl | Mi változott |
 |-------|------|---------------|
+| 2026.06.23. | index.html | Architektúra-átalakítás: a régi, szétszórt kulcsszó-kereséses parser (`parseCounters`/`parseHealthData`) helyett egyetlen, a Notion canonical táblára (📌 Legfrissebb ismert adatok) célzott parser (`parseCanonicalTable`/`mapCanonicalRows`), egységes `renderDashboard()` élő és fallback esetre egyaránt (nincs többé külön, szétcsúszható kódág). `getPageBlocks()` egy szintet lemegy a gyerek-blokkokba is. |
+| 2026.06.23. | index.html | Biztonsági javítás: eltávolítva a kliens-oldali NOTION_TOKEN konstans (nyílt szövegben szerepelt egy publikus repóban, funkcionálisan nem is volt szükséges). Hozzáadva: 📌-jelzés akkor is, ha a fő Notion-lekérdezés sikeres, de egy konkrét mező (streak, Feelfit vagy Garmin dátum) mégis fallback-re esett vissza – korábban ez csendben történt, élő adatnak álcázva. |
+| 2026.06.23. | README.md | Frissítve az `index.html` "Utolsó frissítés" dátuma (a táblázat hónapokig elmaradt a valóságtól); javítva a Notion token elhelyezéséről szóló (akkor már nem igaz) állítás; jelzés a nyitott Worker-proxy kockázatáról. |
+| 2026.06.18. (utólag rögzítve) | index.html | FALLBACK adatok frissítve a 06.17–06.18-i Feelfit/Garmin/számláló adatokra – ez a frissítés korábban nem került be ide, csak a fájlba. |
 | 2026.06.22. | rosas.html | Projektek & Iniciatívák szekció statikus listára váltva (a Cloudflare Worker élő Notion-kapcsolat még nem épült meg, ezért "Nincs adat" jelent meg minden oszlopban – javítva) |
 | 2026.06.22. | rosas.html | EU AI Act & GDPR megfelelési kártya hozzáadva; verzió v4.2 |
 | 2026.06.09. | rosas.html | Marketing átvétel projekt + 2026 Q1 pénzügyi adatok hozzáadva; verzió v4.0 |
