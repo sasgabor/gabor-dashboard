@@ -1,6 +1,8 @@
 # gabor-dashboard
 
-Két élő, statikus HTML dashboard, GitHub Pages-en hosztolva. Mindkettő Notion API-ból tölt adatot egy Cloudflare Worker proxy-n keresztül.
+Két élő HTML dashboard, GitHub Pages-en hosztolva.
+- `index.html` (Gábor OS): élőben olvas Notionból, egy Cloudflare Worker proxy-n keresztül.
+- `rosas.html` (Rosas Logisztikai Kft.): jelenleg **teljesen statikus**, kézzel karbantartott — a Cloudflare Worker élő Notion-kapcsolat még nem épült meg ehhez (lásd lent).
 
 🔗 **Élő linkek:**
 - Gábor OS: https://sasgabor.github.io/gabor-dashboard/
@@ -14,7 +16,7 @@ Két élő, statikus HTML dashboard, GitHub Pages-en hosztolva. Mindkettő Notio
 |------|-----------|-------------------|
 | `index.html` | Gábor OS – személyes önfejlesztési dashboard (Feelfit, Garmin, streak-ek, napirend) | 2026.06.23. |
 | `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR) | 2026.06.22. |
-| `README.md` | Ez a fájl | 2026.06.23. |
+| `README.md` | Ez a fájl | 2026.06.29. |
 
 ---
 
@@ -39,24 +41,25 @@ Céges belső dashboard a Rosas Logisztikai Kft. számára.
 - 20%-os Nyereségnövekedés KPI Projekt státusza
 - Marketing házon belülre hozása projekt (Facebook/LinkedIn/Ads átvétel)
 - EU AI Act & GDPR megfelelési projekt státusza
-- Projektek & Iniciatívák (élő Notion adatbázis-lekérdezés)
+- Projektek & Iniciatívák (kézzel karbantartott statikus lista)
 
-**Adatforrás:** A Projektek & Iniciatívák szekció jelenleg **kézzel karbantartott statikus lista** (az élő Notion-lekérdezés a Cloudflare Worker hiánya miatt nem működött – ld. Changelog). A többi szekció statikusan generált tartalom.
+**Adatforrás:** A teljes fájl **kézzel karbantartott, statikus HTML** — nincs benne `fetch()` hívás, semmilyen szekció nem éri el élőben a Notiont. A live Notion-lekérdezés (Projektek & Iniciatívák szekcióhoz, dedikált Cloudflare Workerrel) tervezett, jövőbeli funkció, eddig nem épült meg.
 
 **Frissítési protokoll:** lásd a `rosas-dashboard` Skill-t (minden munkamenet végén automatikusan ellenőrzendő, kell-e frissítés).
 
 ---
 
-## 🔧 Technikai architektúra (mindkét dashboardra)
+## 🔧 Technikai architektúra
 
 ```
 Böngésző → Cloudflare Worker (notion-proxy) → Notion API → vissza
 ```
+Ez az architektúra jelenleg **csak az `index.html`-t (Gábor OS) szolgálja ki** — a `rosas.html` nem hívja a Workert.
 
 - **Cloudflare Worker:** `https://notion-proxy.sasgabor-sg.workers.dev`
 - **Notion token:** csak a Cloudflare Worker Secrets-ben tárolva, sosem a HTML-ben *(2026.06.23-tól: korábban az `index.html`-ben is szerepelt egy kliens-oldali NOTION_TOKEN konstans nyílt szövegben, ami egy publikus repóban bárki számára olvasható volt — eltávolítva, ld. Changelog. A Worker a kimenő Notion-hívásnál mindig a saját env.NOTION_TOKEN secret-jét használja, a kliens által küldött fejléket figyelmen kívül hagyja.)*
-- ⚠️ A Notion integrations oldal megnyitása (Show gomb) regenerálja és érvényteleníti a tokent – csak akkor nyisd meg, ha valóban szükséges
-- ⚠️ **Nyitott proxy:** a Worker jelenleg nem ellenőrzi, ki hívja – bárki, aki ismeri a Worker URL-t, közvetlenül tud Notion API-hívásokat indítani rajta keresztül (olvasás ÉS írás is, mert a Worker minden HTTP metódust továbbenged). Mivel az URL nyilvánosan elérhető (a dashboard forráskódjában is szerepel), ez egy nyitott kapu a teljes Notion workspace-hez. Érdemes megfontolni egy megosztott titkos fejlék (pl. egyéni `X-Dashboard-Key` header) hozzáadását a Workerhez, amit csak a dashboard ismer és a Worker ellenőriz, mielőtt továbbítja a kérést.
+- ✅ A Notion integrations oldal "Show" és "Copy" ikonja korlátlanul, következmény nélkül használható. Kizárólag a középső "Refresh" ikon regenerálja és érvényteleníti a tokent.
+- ⚠️ **Nyitott proxy:** a Worker jelenleg nem ellenőrzi, ki hívja – bárki, aki ismeri a Worker URL-t, közvetlenül tud Notion API-hívásokat indítani rajta keresztül (olvasás ÉS írás is, mert a Worker minden HTTP metódust továbbenged). Mivel az URL nyilvánosan elérhető (a dashboard forráskódjában is szerepel), ez egy nyitott kapu a Notion-integráció által elérhető tartalomhoz. **2026.06.29-i kiegészítés:** kiderült, hogy a Worker által használt "Gabor Dashbord" Notion-integráció a Rosas "Iniciatívák & Projektek" adatbázishoz is hozzáfér (olvasásra) — tehát a nyitott proxy elvileg ezt is exponálja, jóllehet a `rosas.html` ma nem is hívja a Workert. Javasolt javítás: a "Gabor Dashbord" integráció Rosas-DB connection-jének eltávolítása Notion-oldalon (gyors, manuális lépés), és/vagy egy megosztott titkos fejlék (pl. `X-Dashboard-Key`) hozzáadása a Workerhez.
 
 ---
 
@@ -73,7 +76,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 ## 📝 Changelog
 
-> ⚠️ 2026.06.23-tól két külön blokkban (Gábor OS / Rosas) — ne keverd időrendben egy közös táblázatba, mert úgy nehéz észrevenni, ha az egyik projekt changelog-ja elmaradt.
+> ⚠️ Két külön blokkban (Gábor OS / Rosas) — ne keverd időrendben egy közös táblázatba, mert úgy nehéz észrevenni, ha az egyik projekt changelog-ja elmaradt.
 
 ### Gábor OS (`index.html`)
 
@@ -97,5 +100,6 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum | Mi változott |
 |-------|---------------|
-| 2026.06.23. | Frissítve az `index.html` "Utolsó frissítés" dátuma (a táblázat hónapokig elmaradt a valóságtól); javítva a Notion token elhelyezéséről szóló (akkor már nem igaz) állítás; jelzés a nyitott Worker-proxy kockázatáról; changelog két külön blokkra bontva (Gábor OS / Rosas). |
+| 2026.06.29. | Javítva a "Show gomb regenerálja a tokent" téves állítás (élőben ellenőrizve: nem igaz). Feloldva a bevezető és a Rosas-szakasz közti belső ellentmondás (a bevezető korábban azt sugallta, mindkét dashboard Workeren át tölt adatot — pontosítva, hogy ez csak az index.html-re igaz). Hozzáadva a "Gabor Dashbord" integráció Rosas-DB hozzáférésének felfedezése a nyitott proxy szakaszhoz. |
+| 2026.06.23. | Frissítve az `index.html` "Utolsó frissítés" dátuma; javítva a Notion token elhelyezéséről szóló (akkor már nem igaz) állítás; jelzés a nyitott Worker-proxy kockázatáról; changelog két külön blokkra bontva (Gábor OS / Rosas). |
 | – | Létrehozva (korábban csak cím szerepelt benne) |
