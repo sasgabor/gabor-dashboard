@@ -11,7 +11,7 @@ Két élő, statikus HTML dashboard, GitHub Pages-en hosztolva. Mindkettő Notio
 ## 📁 Fájlok
 
 | Fájl | Mit csinál | Utolsó frissítés |
-|------|-----------|-------------------|
+|------|------------|-------------------|
 | `index.html` | Gábor OS – személyes önfejlesztési dashboard (Feelfit, Garmin, streak-ek, napirend) | 2026.06.23. |
 | `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR) | 2026.06.30. |
 | `README.md` | Ez a fájl | 2026.06.30. |
@@ -37,14 +37,12 @@ Céges belső dashboard a Rosas Logisztikai Kft. számára.
 **Tartalma:**
 - Pénzügyi KPI-k (árbevétel, üzemi/adózott eredmény, YoY Q1 összehasonlítás)
 - 20%-os Nyereségnövekedés KPI Projekt státusza
-- Sales Autopilot – 200+ fős kontaktlista átvitelének státusza (új szekció, 2026.06.30-tól)
-- Marketing házon belülre hozása projekt (Facebook/LinkedIn/Ads átvétel)
+- Marketing házon belülre hozása projekt (Facebook/LinkedIn/Ads átvétel) + Golden Brothers meeting eredménye
+- Sales Autopilot – 200+ fős lista átvitele (önálló szekció)
 - EU AI Act & GDPR megfelelési projekt státusza
-- Projektek & Iniciatívák (kézzel karbantartott statikus lista)
+- Projektek & Iniciatívák (jelenleg kézzel karbantartott statikus lista)
 
 **Adatforrás:** A Projektek & Iniciatívák szekció jelenleg **kézzel karbantartott statikus lista** (az élő Notion-lekérdezés a Cloudflare Worker hiánya miatt nem működött – ld. Changelog). A többi szekció statikusan generált tartalom.
-
-**Adatvédelem:** a publikus dashboardon soha nem szerepelhet nevesített ügyfél vagy konkrét tárgyalási/ár-szám (ld. `rosas-dashboard` skill 2a. pont); a felület 2026.06.24. óta kliens-oldali jelszóval védett (sessionStorage-alapú, nem tekinthető erős védelemnek).
 
 **Frissítési protokoll:** lásd a `rosas-dashboard` Skill-t (minden munkamenet végén automatikusan ellenőrzendő, kell-e frissítés).
 
@@ -60,6 +58,7 @@ Böngésző → Cloudflare Worker (notion-proxy) → Notion API → vissza
 - **Notion token:** csak a Cloudflare Worker Secrets-ben tárolva, sosem a HTML-ben *(2026.06.23-tól: korábban az `index.html`-ben is szerepelt egy kliens-oldali NOTION_TOKEN konstans nyílt szövegben, ami egy publikus repóban bárki számára olvasható volt — eltávolítva, ld. Changelog. A Worker a kimenő Notion-hívásnál mindig a saját env.NOTION_TOKEN secret-jét használja, a kliens által küldött fejléket figyelmen kívül hagyja.)*
 - ⚠️ A Notion integrations oldal megnyitása (Show gomb) regenerálja és érvényteleníti a tokent – csak akkor nyisd meg, ha valóban szükséges
 - ⚠️ **Nyitott proxy:** a Worker jelenleg nem ellenőrzi, ki hívja – bárki, aki ismeri a Worker URL-t, közvetlenül tud Notion API-hívásokat indítani rajta keresztül (olvasás ÉS írás is, mert a Worker minden HTTP metódust továbbenged). Mivel az URL nyilvánosan elérhető (a dashboard forráskódjában is szerepel), ez egy nyitott kapu a teljes Notion workspace-hez. Érdemes megfontolni egy megosztott titkos fejlék (pl. egyéni `X-Dashboard-Key` header) hozzáadását a Workerhez, amit csak a dashboard ismer és a Worker ellenőriz, mielőtt továbbítja a kérést.
+- ⚠️ **Rosas (`rosas.html`) jelenleg NEM ezt az architektúrát használja** – teljesen statikus, kézzel karbantartott HTML, élő Notion-Worker kapcsolat nélkül. Ez a szakasz a tervezett/jövőbeli állapotot írja le a Rosas dashboardra nézve.
 
 ---
 
@@ -71,6 +70,8 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 3. Fájl kiválasztása/húzása (a régi felülíródik)
 4. `Commit changes`
 5. Élő linken `Ctrl+Shift+R` a böngésző cache törléséhez
+
+⚠️ A GitHub online szerkesztőbe (Edit) copy-paste-elt HTML-ben az ékezetes karakterek és emoji-k encoding-hibát szenvedhetnek, ami a CSS teljes összeomlását okozhatja. Kizárólag az `Add file → Upload files` módszer megbízható.
 
 ---
 
@@ -91,7 +92,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum | Mi változott |
 |-------|---------------|
-| 2026.06.30. | Konzisztencia-audit alapján frissítve: rendszerprompt-verzió jelzés v4.8/v4.10 → **v4.13**; új szekció felvéve **Sales Autopilot – 200+ fős lista átvitele** néven (Top prioritás sáv, Következő lépések, Projektek & Iniciatívák/Folyamatban is frissítve); 2025-ös árbevétel KPI-kártya kerekítése 549 M → 550 M javítva (a pontos érték 549,54 M Ft). |
+| 2026.06.30. | Konzisztencia-audit alapján frissítve: rendszerprompt-verzió jelzés v4.10 → **v4.14** (fejléc + footer); 2025-ös árbevétel KPI-kártya kerekítése 549 M → 550 M javítva (pontos érték: 549,54 M Ft); új **Sales Autopilot – 200+ fős lista átvitele** szekció felvéve (Top prioritás sáv, Következő lépések, Projektek & Iniciatívák/Folyamatban oszlop is kiegészítve); **Golden Brothers 2026.06.30-i meeting eredménye** bekerült a Marketing kártyába (LinkedIn elengedve, Facebook + AI Chatbot + Kvíz folytatódik max 3 hónap átmenettel). |
 | 2026.06.22. | Projektek & Iniciatívák szekció statikus listára váltva (a Cloudflare Worker élő Notion-kapcsolat még nem épült meg, ezért "Nincs adat" jelent meg minden oszlopban – javítva) |
 | 2026.06.22. | EU AI Act & GDPR megfelelési kártya hozzáadva; verzió v4.2 |
 | 2026.06.09. | Marketing átvétel projekt + 2026 Q1 pénzügyi adatok hozzáadva; verzió v4.0 |
@@ -101,6 +102,6 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum | Mi változott |
 |-------|---------------|
-| 2026.06.30. | Frissítve a `rosas.html` "Utolsó frissítés" dátuma és a Rosas changelog a 2026.06.30-i dashboard-frissítéssel összhangba hozva (Sales Autopilot szekció, kerekítés-javítás, rendszerprompt-verzió). A "Tartalma" lista kiegészítve a Sales Autopilot szekcióval, az "Adatvédelem" sor felvéve a jelszó-gate és az anonimizálási szabály rövid összefoglalójával. |
+| 2026.06.30. | Frissítve a `rosas.html` "Utolsó frissítés" dátuma és a Rosas changelog a 2026.06.30-i dashboard-frissítéssel összhangba hozva (Sales Autopilot szekció, kerekítés-javítás, rendszerprompt-verzió, Golden Brothers meeting). Technikai architektúra szakasz kiegészítve egy jelzéssel, hogy a Rosas dashboard jelenleg NEM a Cloudflare Worker-es élő architektúrát használja, hanem teljesen statikus. Feltöltési mód szakasz kiegészítve a GitHub online szerkesztő encoding-hiba figyelmeztetésével. |
 | 2026.06.23. | Frissítve az `index.html` "Utolsó frissítés" dátuma (a táblázat hónapokig elmaradt a valóságtól); javítva a Notion token elhelyezéséről szóló (akkor már nem igaz) állítás; jelzés a nyitott Worker-proxy kockázatáról; changelog két külön blokkra bontva (Gábor OS / Rosas). |
 | – | Létrehozva (korábban csak cím szerepelt benne) |
