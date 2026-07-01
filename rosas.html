@@ -1,6 +1,27 @@
 <!DOCTYPE html>
 <html lang="hu">
 <head>
+<script>
+(function() {
+  var correct = "Rosas2026";
+  var stored = sessionStorage.getItem("rosas_auth");
+  if (stored !== correct) {
+    var attempt = prompt("Jelszó szükséges:");
+    if (attempt !== correct) {
+      document.write("<div style=\"font-family:sans-serif;text-align:center;margin-top:20%\">Hozzáférés megtagadva.<\/div>");
+      document.close();
+      throw new Error("stop");
+    }
+    sessionStorage.setItem("rosas_auth", correct);
+  }
+})();
+</script>
+<!--
+ROSAS DASHBOARD — szinkron infó
+Rendszerprompt verzió: v4.14
+Jelszó-gate: sessionStorage-alapú, kliens-oldali. Jelszó véglegesítve: 2026.06.30.
+NEM valódi védelem, csak a véletlen rátalálás ellen szűr.
+-->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rosas Dashboard</title>
@@ -96,7 +117,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--blac
 <div class="header">
 <div>
 <div class="header h1">🌹 Rosas Logisztikai Kft.</div>
-<div class="sub">Frissítve: 2026.06.30. · Rendszerprompt v4.13 · KPI + Marketing + EU AI Act projektek aktívak</div>
+<div class="sub">Frissítve: 2026.06.30. · Rendszerprompt v4.14 · KPI + Marketing + EU AI Act projektek aktívak</div>
 </div>
 <div style="text-align:right;color:#8DB4D9;font-size:12px;">AEO minősítés 2011 óta<br>Minimális kockázat 🟢</div>
 </div>
@@ -149,7 +170,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--blac
 <div class="status-row"><span class="status-icon">📋</span><div class="status-text"><strong>7 lépéses ütemterv kidolgozva</strong> – felelőssel, dátummal, július 31-i határidőre visszaszámolva (részletek: Notion Marketing átvétel státusz oldal)</div></div>
 <div class="status-row"><span class="status-icon">🔲</span><div class="status-text"><strong>Nyitott technikai kérdés az alvállalkozóval</strong> – form-csere vs. szinkron-webhook; ha csúszik, veszélyezteti a határidőt</div></div>
 <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>GDPR-szempont rendezve</strong> – Sales Autopilot már szerepel az adatfeldolgozói listán, importálás előtt duplikátum/jogalap-ellenőrzés ajánlott</div></div>
-<div class="status-row"><span class="status-icon">⏳</span><div class="status-text">Az 58 csali letöltő e-mail sorozata ettől <strong>külön, későbbi lépés</strong> – csak az importálás lezárása után indul</div></div>
+<div class="status-row"><span class="status-icon">⏳</span><div class="status-text">Az e-mail sorozat kidolgozása ettől <strong>külön, későbbi lépés</strong> – csak az importálás lezárása után indul</div></div>
 </div>
 <div class="card">
 <div class="card-title">📈 KPI mutatók – Q1 YoY összehasonlítás</div>
@@ -172,7 +193,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--blac
 <li><span class="step-num">3</span><div class="step-text"><strong>LinkedIn + Facebook poszt eredmények</strong> – 3-4 nap múlva Google Analyticsben ellenőrizni.</div></li>
 <li><span class="step-num">4</span><div class="step-text"><strong>IMAP csere Make.com-ban</strong> – Gmail → ajanlat1@rosas-group.com IMAP trigger.</div></li>
 <li><span class="step-num">5</span><div class="step-text"><strong>Kollégák válaszainak begyűjtése</strong> – Varga Csaba, Hugyecz József (vámrendszer kérdések), Kleiner Szilvia (főkönyvi kérdések).</div></li>
-<li><span class="step-num">6</span><div class="step-text"><strong>58 csali letöltő email sorozat</strong> – Sales Autopilot. A 200+ fős lista-átvitel UTÁN indul.</div></li>
+<li><span class="step-num">6</span><div class="step-text"><strong>E-mail sorozat kidolgozása</strong> – Sales Autopilot. A 200+ fős lista-átvitel UTÁN indul.</div></li>
 <li><span class="step-num">7</span><div class="step-text"><strong>Marketing szerződések felmondása</strong> – 2026. augusztus. ~5,4-6 M Ft/év megtakarítás.</div></li>
 </ol>
 </div>
@@ -184,11 +205,12 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--blac
 <div class="wiki-item">✅ AI leltár (5 rendszer dokumentálva)</div>
 <div class="wiki-item">✅ Dokumentációs Skill éles (eu-ai-act-gdpr-doku)</div>
 <div class="wiki-item">✅ Make.com import-ág dokumentálva a nulláról</div>
+<div class="wiki-item">✅ AI Literacy oktatási anyag elkészítve (2026.06.30.)</div>
 </div>
 <div class="wiki-card">
 <h4>🔲 Folyamatban</h4>
 <div class="wiki-item">📧 Levél küldve ügyvédi irodának (vál. 06.30.)</div>
-<div class="wiki-item">🔲 AI Literacy oktatás – KÉSÉSBEN (2025.02. óta kötelező)</div>
+<div class="wiki-item">🔲 AI Literacy oktatás megtartása – KÉSÉSBEN (2025.02. óta kötelező)</div>
 <div class="wiki-item">🔲 Átláthatósági jelzés Make.com válaszba (08.02-ig)</div>
 </div>
 <div class="wiki-card">
@@ -201,6 +223,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--blac
 <h4>📅 Határidők</h4>
 <div class="wiki-item">06.30. – ügyvédi válasz várt</div>
 <div class="wiki-item">07.31. – AI leltár + jelzés végleges</div>
+<div class="wiki-item">07.31. – Sales Autopilot lista-átvitel</div>
 <div class="wiki-item">08.02. – EU AI Act átláthatóság hatályba</div>
 </div>
 </div>
@@ -268,7 +291,9 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--blac
 <div class="project-card done"><div class="proj-title">EU AI Act & GDPR Dokumentációs Skill élesítve</div></div>
 <div class="project-card done"><div class="proj-title">GDPR megfelelési levél elküldve (HJT ügyvédi iroda)</div></div>
 <div class="project-card done"><div class="proj-title">Dashboard hibajavítás – Projektek szekció</div></div>
-<div class="project-card done"><div class="proj-title">Konzisztencia-audit: rendszerprompt v4.13 + dashboard/README szinkron</div></div>
+<div class="project-card done"><div class="proj-title">Konzisztencia-audit: rendszerprompt v4.14 + dashboard/README szinkron</div></div>
+<div class="project-card done"><div class="proj-title">Jelszó-gate élesítve – rosas.html (2026.06.30.)</div></div>
+<div class="project-card done"><div class="proj-title">AI Literacy oktatási anyag elkészítve (EU AI Act Art. 4)</div></div>
 </div>
 <div class="project-col">
 <h3>⏸ Parkoló</h3>
@@ -283,7 +308,7 @@ body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--blac
 </div>
 </div>
 <div class="footer">
-Rosas Logisztikai Kft. · Belső dashboard · <a href="https://rosas-group.com" style="color:#8DB4D9;">rosas-group.com</a> · Minimális kockázat 🟢 · Rendszerprompt v4.13
+Rosas Logisztikai Kft. · Belső dashboard · <a href="https://rosas-group.com" style="color:#8DB4D9;">rosas-group.com</a> · Minimális kockázat 🟢 · Rendszerprompt v4.14
 </div>
 </body>
 </html>
