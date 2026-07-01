@@ -5,280 +5,285 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Rosas Dashboard</title>
 <style>
-  :root {
-    --blue-dark:#1F4E79;--blue-mid:#2E75B6;--blue-light:#D6E4F0;--blue-pale:#EBF3FB;
-    --gold:#C9A227;--gold-light:#FFF8E1;
-    --green:#375623;--green-light:#E2EFDA;--green-mid:#70AD47;
-    --red:#C00000;--red-light:#FCE4D6;
-    --orange:#ED7D31;--orange-light:#FCE9D8;
-    --gray:#404040;--gray-light:#F5F5F5;--gray-mid:#BFBFBF;
-    --white:#fff;--black:#111;
-  }
-  *{box-sizing:border-box;margin:0;padding:0;}
-  body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--black);font-size:14px;}
-  .header{background:var(--blue-dark);color:white;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;}
-  .header h1{font-size:22px;font-weight:700;}
-  .header .sub{font-size:12px;color:#8DB4D9;margin-top:2px;}
-  .alert{background:var(--red-light);border-left:5px solid var(--red);padding:12px 20px;font-size:13px;line-height:1.5;}
-  .alert strong{color:var(--red);}
-  .top-prio{background:var(--blue-dark);padding:10px 28px;display:flex;gap:20px;flex-wrap:wrap;}
-  .top-prio .label{color:#8DB4D9;font-size:11px;font-weight:600;text-transform:uppercase;margin-right:6px;}
-  .top-prio .item{color:white;font-size:13px;font-weight:500;}
-  .top-prio .num{background:var(--gold);color:white;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:5px;}
-  .tag-new{background:var(--gold);color:white;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px;}
-  .tag-wip{background:var(--blue-mid);color:white;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px;}
-  .tag-done{background:var(--green-mid);color:white;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px;}
-  .container{max-width:1400px;margin:0 auto;padding:20px;}
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
-  .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
-  .grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
-  @media(max-width:900px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
-  .card{background:white;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:18px;}
-  .card-title{font-size:13px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;}
-  .kpi-card{background:white;border-radius:8px;padding:14px 16px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.08);}
-  .kpi-val{font-size:26px;font-weight:800;color:var(--blue-dark);}
-  .kpi-label{font-size:11px;color:var(--gray);margin-top:3px;}
-  .kpi-badge{font-size:11px;font-weight:600;margin-top:4px;}
-  .badge-red{color:var(--red);}.badge-green{color:var(--green);}.badge-ok{color:var(--blue-mid);}
-  .data-table{width:100%;border-collapse:collapse;font-size:13px;}
-  .data-table th{background:var(--blue-dark);color:white;padding:8px 10px;text-align:left;font-size:12px;}
-  .data-table td{padding:7px 10px;border-bottom:1px solid #e8eef4;}
-  .data-table tr:nth-child(even) td{background:var(--gray-light);}
-  .data-table .val{text-align:right;font-weight:600;}
-  .data-table .chg-neg{color:var(--red);font-weight:700;}
-  .data-table .chg-pos{color:var(--green);font-weight:700;}
-  .kpi-project{background:var(--blue-pale);border:2px solid var(--blue-mid);border-radius:8px;padding:18px;}
-  .kpi-project .section-title{font-size:15px;font-weight:700;color:var(--blue-dark);margin-bottom:14px;}
-  .kpi-project .status-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--blue-light);}
-  .kpi-project .status-row:last-child{border-bottom:none;}
-  .kpi-project .status-icon{font-size:16px;min-width:22px;text-align:center;}
-  .kpi-project .status-text{font-size:13px;line-height:1.4;}
-  .kpi-project .status-text strong{color:var(--blue-dark);}
-  .marketing-card{background:var(--green-light);border:2px solid var(--green-mid);border-radius:8px;padding:18px;}
-  .marketing-card .section-title{font-size:15px;font-weight:700;color:var(--green);margin-bottom:14px;}
-  .marketing-card .status-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #c3e6d0;}
-  .marketing-card .status-row:last-child{border-bottom:none;}
-  .marketing-card .status-icon{font-size:16px;min-width:22px;text-align:center;}
-  .marketing-card .status-text{font-size:13px;line-height:1.4;}
-  .marketing-card .status-text strong{color:var(--green);}
-  .wiki-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
-  .wiki-card{background:var(--gray-light);border-radius:6px;padding:12px;}
-  .wiki-card h4{font-size:12px;font-weight:700;color:var(--blue-dark);margin-bottom:8px;}
-  .wiki-item{font-size:12px;padding:2px 0;}
-  .project-col{background:var(--gray-light);border-radius:8px;padding:14px;min-height:120px;}
-  .project-col h3{font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #ddd;}
-  .project-card{background:white;border-radius:6px;padding:10px 12px;margin-bottom:8px;font-size:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-left:3px solid var(--blue-mid);}
-  .project-card.done{border-left-color:var(--green-mid);}
-  .project-card.parked{border-left-color:var(--gray-mid);}
-  .project-card .proj-title{font-weight:600;color:var(--blue-dark);margin-bottom:3px;}
-  .project-card.done .proj-title{color:var(--green);}
-  .loading{color:var(--gray-mid);font-style:italic;font-size:12px;padding:10px 0;}
-  .step-list{list-style:none;}
-  .step-list li{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #e8eef4;}
-  .step-list li:last-child{border-bottom:none;}
-  .step-num{background:var(--blue-dark);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
-  .step-text{font-size:13px;line-height:1.4;}
-  .footer{background:var(--blue-dark);color:#8DB4D9;text-align:center;padding:12px;font-size:11px;margin-top:24px;}
-  .section-gap{margin-top:20px;}
-  .megtakaritas-badge{background:var(--green);color:white;font-size:13px;font-weight:700;padding:4px 10px;border-radius:4px;display:inline-block;margin-top:6px;}
+:root {
+--blue-dark:#1F4E79;--blue-mid:#2E75B6;--blue-light:#D6E4F0;--blue-pale:#EBF3FB;
+--gold:#C9A227;--gold-light:#FFF8E1;
+--green:#375623;--green-light:#E2EFDA;--green-mid:#70AD47;
+--red:#C00000;--red-light:#FCE4D6;
+--orange:#ED7D31;--orange-light:#FCE9D8;
+--gray:#404040;--gray-light:#F5F5F5;--gray-mid:#BFBFBF;
+--white:#fff;--black:#111;
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4f8;color:var(--black);font-size:14px;}
+.header{background:var(--blue-dark);color:white;padding:18px 28px;display:flex;align-items:center;justify-content:space-between;}
+.header h1{font-size:22px;font-weight:700;}
+.header .sub{font-size:12px;color:#8DB4D9;margin-top:2px;}
+.alert{background:var(--red-light);border-left:5px solid var(--red);padding:12px 20px;font-size:13px;line-height:1.5;}
+.alert strong{color:var(--red);}
+.top-prio{background:var(--blue-dark);padding:10px 28px;display:flex;gap:20px;flex-wrap:wrap;}
+.top-prio .label{color:#8DB4D9;font-size:11px;font-weight:600;text-transform:uppercase;margin-right:6px;}
+.top-prio .item{color:white;font-size:13px;font-weight:500;}
+.top-prio .num{background:var(--gold);color:white;border-radius:50%;width:18px;height:18px;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;margin-right:5px;}
+.tag-new{background:var(--gold);color:white;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px;}
+.tag-wip{background:var(--blue-mid);color:white;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px;}
+.tag-done{background:var(--green-mid);color:white;font-size:10px;font-weight:700;padding:1px 5px;border-radius:3px;margin-left:4px;}
+.container{max-width:1400px;margin:0 auto;padding:20px;}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px;}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:16px;}
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;}
+@media(max-width:900px){.grid-2,.grid-3,.grid-4{grid-template-columns:1fr;}}
+.card{background:white;border-radius:8px;box-shadow:0 1px 4px rgba(0,0,0,.08);padding:18px;}
+.card-title{font-size:13px;font-weight:700;color:var(--blue-mid);text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;border-bottom:2px solid var(--blue-light);padding-bottom:6px;}
+.kpi-card{background:white;border-radius:8px;padding:14px 16px;text-align:center;box-shadow:0 1px 4px rgba(0,0,0,.08);}
+.kpi-val{font-size:26px;font-weight:800;color:var(--blue-dark);}
+.kpi-label{font-size:11px;color:var(--gray);margin-top:3px;}
+.kpi-badge{font-size:11px;font-weight:600;margin-top:4px;}
+.badge-red{color:var(--red);}.badge-green{color:var(--green);}.badge-ok{color:var(--blue-mid);}
+.data-table{width:100%;border-collapse:collapse;font-size:13px;}
+.data-table th{background:var(--blue-dark);color:white;padding:8px 10px;text-align:left;font-size:12px;}
+.data-table td{padding:7px 10px;border-bottom:1px solid #e8eef4;}
+.data-table tr:nth-child(even) td{background:var(--gray-light);}
+.data-table .val{text-align:right;font-weight:600;}
+.data-table .chg-neg{color:var(--red);font-weight:700;}
+.data-table .chg-pos{color:var(--green);font-weight:700;}
+.kpi-project{background:var(--blue-pale);border:2px solid var(--blue-mid);border-radius:8px;padding:18px;}
+.kpi-project .section-title{font-size:15px;font-weight:700;color:var(--blue-dark);margin-bottom:14px;}
+.kpi-project .status-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--blue-light);}
+.kpi-project .status-row:last-child{border-bottom:none;}
+.kpi-project .status-icon{font-size:16px;min-width:22px;text-align:center;}
+.kpi-project .status-text{font-size:13px;line-height:1.4;}
+.kpi-project .status-text strong{color:var(--blue-dark);}
+.marketing-card{background:var(--green-light);border:2px solid var(--green-mid);border-radius:8px;padding:18px;}
+.marketing-card .section-title{font-size:15px;font-weight:700;color:var(--green);margin-bottom:14px;}
+.marketing-card .status-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #c3e6d0;}
+.marketing-card .status-row:last-child{border-bottom:none;}
+.marketing-card .status-icon{font-size:16px;min-width:22px;text-align:center;}
+.marketing-card .status-text{font-size:13px;line-height:1.4;}
+.marketing-card .status-text strong{color:var(--green);}
+.sales-card{background:var(--gold-light);border:2px solid var(--gold);border-radius:8px;padding:18px;}
+.sales-card .section-title{font-size:15px;font-weight:700;color:#8a6d1a;margin-bottom:14px;}
+.sales-card .status-row{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid #f0e4b8;}
+.sales-card .status-row:last-child{border-bottom:none;}
+.sales-card .status-icon{font-size:16px;min-width:22px;text-align:center;}
+.sales-card .status-text{font-size:13px;line-height:1.4;}
+.sales-card .status-text strong{color:#8a6d1a;}
+.wiki-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;}
+.wiki-card{background:var(--gray-light);border-radius:6px;padding:12px;}
+.wiki-card h4{font-size:12px;font-weight:700;color:var(--blue-dark);margin-bottom:8px;}
+.wiki-item{font-size:12px;padding:2px 0;}
+.project-col{background:var(--gray-light);border-radius:8px;padding:14px;min-height:120px;}
+.project-col h3{font-size:12px;font-weight:700;color:var(--gray);text-transform:uppercase;letter-spacing:.5px;margin-bottom:10px;padding-bottom:6px;border-bottom:2px solid #ddd;}
+.project-card{background:white;border-radius:6px;padding:10px 12px;margin-bottom:8px;font-size:12px;box-shadow:0 1px 3px rgba(0,0,0,.06);border-left:3px solid var(--blue-mid);}
+.project-card.done{border-left-color:var(--green-mid);}
+.project-card.parked{border-left-color:var(--gray-mid);}
+.project-card.new{border-left-color:var(--gold);}
+.project-card .proj-title{font-weight:600;color:var(--blue-dark);margin-bottom:3px;}
+.project-card.done .proj-title{color:var(--green);}
+.project-card.new .proj-title{color:#8a6d1a;}
+.loading{color:var(--gray-mid);font-style:italic;font-size:12px;padding:10px 0;}
+.step-list{list-style:none;}
+.step-list li{display:flex;align-items:flex-start;gap:12px;padding:10px 0;border-bottom:1px solid #e8eef4;}
+.step-list li:last-child{border-bottom:none;}
+.step-num{background:var(--blue-dark);color:white;border-radius:50%;width:24px;height:24px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;}
+.step-text{font-size:13px;line-height:1.4;}
+.footer{background:var(--blue-dark);color:#8DB4D9;text-align:center;padding:12px;font-size:11px;margin-top:24px;}
+.section-gap{margin-top:20px;}
+.megtakaritas-badge{background:var(--green);color:white;font-size:13px;font-weight:700;padding:4px 10px;border-radius:4px;display:inline-block;margin-top:6px;}
 </style>
 </head>
 <body>
 <div class="header">
-  <div>
-    <div class="header h1">🌹 Rosas Logisztikai Kft.</div>
-    <div class="sub">Frissítve: 2026.06.30. · Rendszerprompt v4.10 · KPI + Marketing + EU AI Act projektek aktívak</div>
-  </div>
-  <div style="text-align:right;color:#8DB4D9;font-size:12px;">AEO minősítés 2011 óta<br>Minimális kockázat 🟢</div>
+<div>
+<div class="header h1">🌹 Rosas Logisztikai Kft.</div>
+<div class="sub">Frissítve: 2026.06.30. · Rendszerprompt v4.13 · KPI + Marketing + EU AI Act projektek aktívak</div>
 </div>
-
+<div style="text-align:right;color:#8DB4D9;font-size:12px;">AEO minősítés 2011 óta<br>Minimális kockázat 🟢</div>
+</div>
 <div class="alert">
-  <strong>⚠️ Kritikus profitcsökkenés – azonnali beavatkozás folyamatban.</strong>
-  2025 adózott eredmény: 8,0 M Ft (–85,5% vs 2024). <strong>Jó hír: 2026 Q1 az elmúlt 3 év legjobb Q1-je</strong> – 17,9 M Ft adózott eredmény. A 20%-os nyereségnövekedési projekt aktív.
+<strong>⚠️ Kritikus profitcsökkenés – azonnali beavatkozás folyamatban.</strong>
+2025 adózott eredmény: 8,0 M Ft (–85,5% vs 2024). <strong>Jó hír: 2026 Q1 az elmúlt 3 év legjobb Q1-je</strong> – 17,9 M Ft adózott eredmény. A 20%-os nyereségnövekedési projekt aktív.
 </div>
-
 <div class="top-prio">
-  <span class="label">Top prioritás:</span>
-  <span class="item"><span class="num">1</span>Top ügyfél áremelési tárgyalás <span class="tag-new">~13 M Ft/év</span></span>
-  <span class="item"><span class="num">2</span>Marketing házon belül <span class="tag-wip">FOLYAMATBAN</span></span>
-  <span class="item"><span class="num">3</span>IMAP csere + Import AI ág</span>
+<span class="label">Top prioritás:</span>
+<span class="item"><span class="num">1</span>Top ügyfél áremelési tárgyalás <span class="tag-new">~13 M Ft/év</span></span>
+<span class="item"><span class="num">2</span>Sales Autopilot lista-átvitel <span class="tag-new">1-2 héten belül</span></span>
+<span class="item"><span class="num">3</span>Marketing házon belül <span class="tag-wip">FOLYAMATBAN</span></span>
+<span class="item"><span class="num">4</span>IMAP csere + Import AI ág</span>
 </div>
-
 <div class="container">
-
-  <div class="grid-4 section-gap">
-    <div class="kpi-card"><div class="kpi-val">549 M</div><div class="kpi-label">Árbevétel 2025</div><div class="kpi-badge badge-ok">+7,2% vs 2024</div></div>
-    <div class="kpi-card"><div class="kpi-val">8,0 M</div><div class="kpi-label">Adózott eredmény 2025</div><div class="kpi-badge badge-red">–85,5% vs 2024</div></div>
-    <div class="kpi-card"><div class="kpi-val">17,9 M</div><div class="kpi-label">Adózott eredmény 2026 Q1</div><div class="kpi-badge badge-green">Legjobb Q1 3 éve! ✅</div></div>
-    <div class="kpi-card"><div class="kpi-val">2,05</div><div class="kpi-label">Likviditási ráta</div><div class="kpi-badge badge-green">Kiváló ✅</div></div>
-  </div>
-
-  <div class="grid-2 section-gap">
-    <div class="kpi-project">
-      <div class="section-title">📊 20%-os KPI Projekt – aktuális állás</div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Vámkezelési statisztikák elemezve</strong> – 2024–2026.05. havi bontás</div></div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>26.057 számlás tételsor elemezve</strong> – ügyfél-profitabilitás, árazási szórás</div></div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Spedíciós számlák elemezve</strong> – Balázs/Vivi munkamegosztás, alvállalkozói elemzés</div></div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>2026 Q1 főkönyv elemezve</strong> – YoY összehasonlítás 2024/2025/2026</div></div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Top ügyfél árazási anomália azonosítva</strong> – jelentősen piaci átlag alatti díjazás, részletek belső dokumentációban</div></div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Bankszámlák elemezve</strong> – HUF×2, EUR, USD; NAV-csatorna feltárva, részletek belső dokumentációban</div></div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Átmenő tételek pontosítva</strong> – V000100/V000103 cikkszám alapján, nem becsléssel</div></div>
-      <div class="status-row"><span class="status-icon">🔲</span><div class="status-text"><strong>Hiányzik:</strong> Kollégák válaszai (Varga Csaba, Hugyecz József, Kleiner Szilvia)</div></div>
-      <div class="status-row"><span class="status-icon">🔲</span><div class="status-text"><strong>KPI rendszer véglegesítése</strong> – kollégák válaszainak megérkezése után</div></div>
-    </div>
-
-    <div class="marketing-card">
-      <div class="section-title">📱 Marketing házon belülre hozása <span class="tag-wip" style="font-size:11px;">ÚJ</span></div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Facebook Business Suite</strong> – Rosas saját fiókja megerősítve</div></div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Hirdetési fiók</strong> – rosas_kft saját Business Portfolio</div></div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>GA4 + Facebook Pixel + UTM linkek</strong> – mind aktív és tesztelve</div></div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Első poszt ÉL</strong> – LinkedIn (József) + Facebook + Instagram – 2026.06.09.</div></div>
-      <div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Levél elküldve</strong> – külső cégnek: teljesítményjelentés + adatátadás kérve (határidő: 06.30.)</div></div>
-      <div class="status-row"><span class="status-icon">🔲</span><div class="status-text"><strong>Szerződések felmondása: 2026. augusztus</strong> – ~5,4-6 M Ft/év megtakarítás</div></div>
-      <div style="margin-top:10px;"><span class="megtakaritas-badge">Várható megtakarítás: ~5,4–6 M Ft/év</span></div>
-    </div>
-  </div>
-
-  <div class="grid-2 section-gap">
-    <div class="card">
-      <div class="card-title">📈 KPI mutatók – Q1 YoY összehasonlítás</div>
-      <table class="data-table">
-        <tr><th>Mutató</th><th>2024 Q1</th><th>2025 Q1</th><th>2026 Q1</th></tr>
-        <tr><td>Árbevétel</td><td class="val">106,2 M</td><td class="val">112,2 M</td><td class="val chg-pos">154,7 M ✅</td></tr>
-        <tr><td>Üzemi eredmény</td><td class="val">12,3 M</td><td class="val chg-neg">−10,6 M</td><td class="val chg-pos">19,7 M ✅</td></tr>
-        <tr><td>Adózott eredmény</td><td class="val">14,0 M</td><td class="val chg-neg">−14,4 M</td><td class="val chg-pos">17,9 M ✅</td></tr>
-        <tr><td>Üzemi marzs</td><td class="val">11,5%</td><td class="val chg-neg">−9,4%</td><td class="val chg-pos">12,7% ✅</td></tr>
-        <tr><td>Fuvar marzs (éves)</td><td class="val">19,9%</td><td class="val chg-pos">20,6%</td><td class="val chg-neg">18,4% ⚠️</td></tr>
-        <tr><td>Vámkezelés db/év</td><td class="val">3.530</td><td class="val">3.483</td><td class="val">~3.600 (ann.)</td></tr>
-      </table>
-    </div>
-
-    <div class="card">
-      <div class="card-title">🚀 Következő lépések</div>
-      <ol class="step-list">
-        <li><span class="step-num">1</span><div class="step-text"><strong>Top ügyfél áremelési tárgyalás</strong> – előkészítése. ~13 M Ft/év potenciál, részletek belső dokumentációban.</div></li>
-        <li><span class="step-num">2</span><div class="step-text"><strong>LinkedIn + Facebook poszt eredmények</strong> – 3-4 nap múlva Google Analyticsben ellenőrizni.</div></li>
-        <li><span class="step-num">3</span><div class="step-text"><strong>IMAP csere Make.com-ban</strong> – Gmail → ajanlat1@rosas-group.com IMAP trigger.</div></li>
-        <li><span class="step-num">4</span><div class="step-text"><strong>Kollégák válaszainak begyűjtése</strong> – Varga Csaba, Hugyecz József (vámrendszer kérdések), Kleiner Szilvia (főkönyvi kérdések).</div></li>
-        <li><span class="step-num">5</span><div class="step-text"><strong>58 csali letöltő email sorozat</strong> – Sales Autopilot. Feliratkozók tárolási helyének tisztázása előbb.</div></li>
-        <li><span class="step-num">6</span><div class="step-text"><strong>Marketing szerződések felmondása</strong> – 2026. augusztus. ~5,4-6 M Ft/év megtakarítás.</div></li>
-      </ol>
-    </div>
-  </div>
-
-  <div class="card section-gap" style="border-left:4px solid var(--gold);">
-    <div class="card-title">⚖️ EU AI Act & GDPR megfelelés</div>
-    <div class="wiki-grid">
-      <div class="wiki-card">
-        <h4>✅ Kész</h4>
-        <div class="wiki-item">✅ AI leltár (5 rendszer dokumentálva)</div>
-        <div class="wiki-item">✅ Dokumentációs Skill éles (eu-ai-act-gdpr-doku)</div>
-        <div class="wiki-item">✅ Make.com import-ág dokumentálva a nulláról</div>
-      </div>
-      <div class="wiki-card">
-        <h4>🔲 Folyamatban</h4>
-        <div class="wiki-item">📧 Levél küldve ügyvédi irodának (vál. 06.30.)</div>
-        <div class="wiki-item">🔲 AI Literacy oktatás – KÉSÉSBEN (2025.02. óta kötelező)</div>
-        <div class="wiki-item">🔲 Átláthatósági jelzés Make.com válaszba (08.02-ig)</div>
-      </div>
-      <div class="wiki-card">
-        <h4>⚠️ GDPR hiányosság</h4>
-        <div class="wiki-item">⚠️ Make.com DPA hiányzik</div>
-        <div class="wiki-item">⚠️ AI-modell szolgáltató DPA hiányzik</div>
-        <div class="wiki-item">⚠️ Tájékoztató nem említi az AI-folyamatot</div>
-      </div>
-      <div class="wiki-card">
-        <h4>📅 Határidők</h4>
-        <div class="wiki-item">06.30. – ügyvédi válasz várt</div>
-        <div class="wiki-item">07.31. – AI leltár + jelzés végleges</div>
-        <div class="wiki-item">08.02. – EU AI Act átláthatóság hatályba</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card section-gap">
-    <div class="card-title">📚 Wiki & Tudásbázis státusz</div>
-    <div class="wiki-grid">
-      <div class="wiki-card">
-        <h4>📋 Elemzések – kész</h4>
-        <div class="wiki-item">✅ 26.057 számlás tételsor (2024–2026.03)</div>
-        <div class="wiki-item">✅ Spedíciós számlák CSV</div>
-        <div class="wiki-item">✅ Vámkezelési statisztikák (2024–2026.05)</div>
-        <div class="wiki-item">✅ 2026 Q1 főkönyv + negyedéves YoY</div>
-      </div>
-      <div class="wiki-card">
-        <h4>🔲 Elemzések – hiányzó</h4>
-        <div class="wiki-item">🔲 Kollégák válaszai (B+C kérdéscsoport)</div>
-        <div class="wiki-item">✅ Átmenő tételek – pontosítva</div>
-        <div class="wiki-item">✅ Bankszámlák (HUF×2, EUR, USD) – elemezve</div>
-        <div class="wiki-item">✅ 2024/2025/2026 Q1 főkönyv – elemezve</div>
-      </div>
-      <div class="wiki-card">
-        <h4>📱 Marketing – kész</h4>
-        <div class="wiki-item">✅ Facebook + Instagram poszt él</div>
-        <div class="wiki-item">✅ LinkedIn poszt él (József profil)</div>
-        <div class="wiki-item">✅ GA4 + Pixel + UTM tesztelve</div>
-        <div class="wiki-item">✅ Levél küldve külső cégnek</div>
-      </div>
-      <div class="wiki-card">
-        <h4>🤖 AI automatizálás</h4>
-        <div class="wiki-item">✅ Export ág kész</div>
-        <div class="wiki-item">🔄 IMAP csere folyamatban</div>
-        <div class="wiki-item">⏳ Import ág felépítése</div>
-        <div class="wiki-item">⏳ Sales Autopilot email sorozat</div>
-      </div>
-    </div>
-  </div>
-
-  <div class="card section-gap">
-    <div class="card-title">🗂 Projektek & Iniciatívák</div>
-    <div class="grid-3">
-      <div class="project-col">
-        <h3>🔄 Folyamatban</h3>
-        <div class="project-card"><div class="proj-title">Top ügyfél áremelési tárgyalás előkészítése</div></div>
-        <div class="project-card"><div class="proj-title">Marketing átvétel (Facebook/LinkedIn/Ads)</div></div>
-        <div class="project-card"><div class="proj-title">Make.com Import ág felépítése</div></div>
-        <div class="project-card"><div class="proj-title">IMAP csere (export ág)</div></div>
-        <div class="project-card"><div class="proj-title">Nem nyereséges ügyfelek kezelése</div></div>
-        <div class="project-card"><div class="proj-title">EU AI Act & GDPR megfelelés</div></div>
-      </div>
-      <div class="project-col">
-        <h3>✅ Elvégzett fejlesztések</h3>
-        <div class="project-card done" style="border-left-color:#aaa;background:#f9f9f9;">
-          <div class="proj-title" style="color:#888;font-size:11px;">ℹ️ A 2026.06.05. előtti fejlesztések a Notion Wikiben és a rendszerpromptban vannak dokumentálva.</div>
-        </div>
-        <div class="project-card done"><div class="proj-title">986 ügyfél feltöltve a Notion CRM-be</div></div>
-        <div class="project-card done"><div class="proj-title">Pénzügyi értékvesztés azonosítva (árfolyamveszteség)</div></div>
-        <div class="project-card done"><div class="proj-title">Vámkezelési + SPED Excel táblák elemzése</div></div>
-        <div class="project-card done"><div class="proj-title">Bérlista Excel Feldolgozó GPT – dokumentáció</div></div>
-        <div class="project-card done"><div class="proj-title">Bankszámlák (HUF×2, EUR, USD) elemzése</div></div>
-        <div class="project-card done"><div class="proj-title">2024/2025/2026 Q1 főkönyv – YoY elemzés</div></div>
-        <div class="project-card done"><div class="proj-title">Első LinkedIn + Facebook poszt élesítve</div></div>
-        <div class="project-card done"><div class="proj-title">Bankszámla NAV-csatorna feltárva, részletek belső dokumentációban</div></div>
-        <div class="project-card done"><div class="proj-title">Átmenő tételek pontosítva (V000100/V000103 cikkszám alapján)</div></div>
-        <div class="project-card done"><div class="proj-title">EU AI Act & GDPR Dokumentációs Skill élesítve</div></div>
-        <div class="project-card done"><div class="proj-title">GDPR megfelelési levél elküldve (HJT ügyvédi iroda)</div></div>
-        <div class="project-card done"><div class="proj-title">Dashboard hibajavítás – Projektek szekció</div></div>
-        <div class="project-card done"><div class="proj-title">Konzisztencia-audit: rendszerprompt v4.10 + rosas-crm/rosas-session-close skill javítás</div></div>
-      </div>
-      <div class="project-col">
-        <h3>⏸ Parkoló</h3>
-        <div class="project-card parked"><div class="proj-title">Cloudflare Worker – élő Notion API kapcsolat</div></div>
-        <div class="project-card parked"><div class="proj-title">Honlap AI-keresőbaráttá alakítása</div></div>
-        <div class="project-card parked"><div class="proj-title">Ügyfél-onboarding folyamat standardizálása</div></div>
-        <div class="project-card parked"><div class="proj-title">Kapacitástervezés és csapatfejlesztés</div></div>
-        <div class="project-card parked"><div class="proj-title">Hosszútávú ügyfélmegtartási rendszer</div></div>
-      </div>
-    </div>
-    <div style="margin-top:10px;font-size:11px;color:var(--gray-mid);">Frissítve: 2026.06.30. (kézzel karbantartott lista – élő Notion-szinkron még nincs kiépítve)</div>
-  </div>
-
+<div class="grid-4 section-gap">
+<div class="kpi-card"><div class="kpi-val">550 M</div><div class="kpi-label">Árbevétel 2025</div><div class="kpi-badge badge-ok">+7,2% vs 2024</div></div>
+<div class="kpi-card"><div class="kpi-val">8,0 M</div><div class="kpi-label">Adózott eredmény 2025</div><div class="kpi-badge badge-red">–85,5% vs 2024</div></div>
+<div class="kpi-card"><div class="kpi-val">17,9 M</div><div class="kpi-label">Adózott eredmény 2026 Q1</div><div class="kpi-badge badge-green">Legjobb Q1 3 éve! ✅</div></div>
+<div class="kpi-card"><div class="kpi-val">2,05</div><div class="kpi-label">Likviditási ráta</div><div class="kpi-badge badge-green">Kiváló ✅</div></div>
 </div>
-
+<div class="grid-2 section-gap">
+<div class="kpi-project">
+<div class="section-title">📊 20%-os KPI Projekt – aktuális állás</div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Vámkezelési statisztikák elemezve</strong> – 2024–2026.05. havi bontás</div></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>26.057 számlás tételsor elemezve</strong> – ügyfél-profitabilitás, árazási szórás</div></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Spedíciós számlák elemezve</strong> – Balázs/Vivi munkamegosztás, alvállalkozói elemzés</div></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>2026 Q1 főkönyv elemezve</strong> – YoY összehasonlítás 2024/2025/2026</div></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Top ügyfél árazási anomália azonosítva</strong> – jelentősen piaci átlag alatti díjazás, részletek belső dokumentációban</div></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Bankszámlák elemezve</strong> – HUF×2, EUR, USD; NAV-csatorna feltárva, részletek belső dokumentációban</div></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Átmenő tételek pontosítva</strong> – V000100/V000103 cikkszám alapján, nem becsléssel</div></div>
+<div class="status-row"><span class="status-icon">🔲</span><div class="status-text"><strong>Hiányzik:</strong> Kollégák válaszai (Varga Csaba, Hugyecz József, Kleiner Szilvia)</div></div>
+<div class="status-row"><span class="status-icon">🔲</span><div class="status-text"><strong>KPI rendszer véglegesítése</strong> – kollégák válaszainak megérkezése után</div></div>
+</div>
+<div class="marketing-card">
+<div class="section-title">📱 Marketing házon belülre hozása <span class="tag-wip" style="font-size:11px;">ÚJ</span></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Facebook Business Suite</strong> – Rosas saját fiókja megerősítve</div></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Hirdetési fiók</strong> – rosas_kft saját Business Portfolio</div></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>GA4 + Facebook Pixel + UTM linkek</strong> – mind aktív és tesztelve</div></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Első poszt ÉL</strong> – LinkedIn (József) + Facebook + Instagram – 2026.06.09.</div></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>Levél elküldve</strong> – külső cégnek: teljesítményjelentés + adatátadás kérve (határidő: 06.30.)</div></div>
+<div class="status-row"><span class="status-icon">🔲</span><div class="status-text"><strong>Szerződések felmondása: 2026. augusztus</strong> – ~5,4-6 M Ft/év megtakarítás</div></div>
+<div style="margin-top:10px;"><span class="megtakaritas-badge">Várható megtakarítás: ~5,4–6 M Ft/év</span></div>
+</div>
+</div>
+<div class="grid-2 section-gap">
+<div class="sales-card">
+<div class="section-title">📥 Sales Autopilot – 200+ fős lista átvitele <span class="tag-new" style="font-size:11px;">ÚJ</span></div>
+<div class="status-row"><span class="status-icon">🎯</span><div class="status-text"><strong>Cél:</strong> 200+ fős kontaktlista importálása Sales Autopilotba, mielőtt az e-mail sorozat kidolgozása elindul</div></div>
+<div class="status-row"><span class="status-icon">📋</span><div class="status-text"><strong>7 lépéses ütemterv kidolgozva</strong> – felelőssel, dátummal, július 31-i határidőre visszaszámolva (részletek: Notion Marketing átvétel státusz oldal)</div></div>
+<div class="status-row"><span class="status-icon">🔲</span><div class="status-text"><strong>Nyitott technikai kérdés az alvállalkozóval</strong> – form-csere vs. szinkron-webhook; ha csúszik, veszélyezteti a határidőt</div></div>
+<div class="status-row"><span class="status-icon">✅</span><div class="status-text"><strong>GDPR-szempont rendezve</strong> – Sales Autopilot már szerepel az adatfeldolgozói listán, importálás előtt duplikátum/jogalap-ellenőrzés ajánlott</div></div>
+<div class="status-row"><span class="status-icon">⏳</span><div class="status-text">Az 58 csali letöltő e-mail sorozata ettől <strong>külön, későbbi lépés</strong> – csak az importálás lezárása után indul</div></div>
+</div>
+<div class="card">
+<div class="card-title">📈 KPI mutatók – Q1 YoY összehasonlítás</div>
+<table class="data-table">
+<tr><th>Mutató</th><th>2024 Q1</th><th>2025 Q1</th><th>2026 Q1</th></tr>
+<tr><td>Árbevétel</td><td class="val">106,2 M</td><td class="val">112,2 M</td><td class="val chg-pos">154,7 M ✅</td></tr>
+<tr><td>Üzemi eredmény</td><td class="val">12,3 M</td><td class="val chg-neg">−10,6 M</td><td class="val chg-pos">19,7 M ✅</td></tr>
+<tr><td>Adózott eredmény</td><td class="val">14,0 M</td><td class="val chg-neg">−14,4 M</td><td class="val chg-pos">17,9 M ✅</td></tr>
+<tr><td>Üzemi marzs</td><td class="val">11,5%</td><td class="val chg-neg">−9,4%</td><td class="val chg-pos">12,7% ✅</td></tr>
+<tr><td>Fuvar marzs (éves)</td><td class="val">19,9%</td><td class="val chg-pos">20,6%</td><td class="val chg-neg">18,4% ⚠️</td></tr>
+<tr><td>Vámkezelés db/év</td><td class="val">3.530</td><td class="val">3.483</td><td class="val">~3.600 (ann.)</td></tr>
+</table>
+</div>
+</div>
+<div class="card section-gap">
+<div class="card-title">🚀 Következő lépések</div>
+<ol class="step-list">
+<li><span class="step-num">1</span><div class="step-text"><strong>Top ügyfél áremelési tárgyalás</strong> – előkészítése. ~13 M Ft/év potenciál, részletek belső dokumentációban.</div></li>
+<li><span class="step-num">2</span><div class="step-text"><strong>Sales Autopilot – 200+ fős lista átvitele</strong> – 1-2 héten belül; első egyeztetésen tisztázandó a nyitott technikai kérdés (form-csere vs. webhook).</div></li>
+<li><span class="step-num">3</span><div class="step-text"><strong>LinkedIn + Facebook poszt eredmények</strong> – 3-4 nap múlva Google Analyticsben ellenőrizni.</div></li>
+<li><span class="step-num">4</span><div class="step-text"><strong>IMAP csere Make.com-ban</strong> – Gmail → ajanlat1@rosas-group.com IMAP trigger.</div></li>
+<li><span class="step-num">5</span><div class="step-text"><strong>Kollégák válaszainak begyűjtése</strong> – Varga Csaba, Hugyecz József (vámrendszer kérdések), Kleiner Szilvia (főkönyvi kérdések).</div></li>
+<li><span class="step-num">6</span><div class="step-text"><strong>58 csali letöltő email sorozat</strong> – Sales Autopilot. A 200+ fős lista-átvitel UTÁN indul.</div></li>
+<li><span class="step-num">7</span><div class="step-text"><strong>Marketing szerződések felmondása</strong> – 2026. augusztus. ~5,4-6 M Ft/év megtakarítás.</div></li>
+</ol>
+</div>
+<div class="card section-gap" style="border-left:4px solid var(--gold);">
+<div class="card-title">⚖️ EU AI Act & GDPR megfelelés</div>
+<div class="wiki-grid">
+<div class="wiki-card">
+<h4>✅ Kész</h4>
+<div class="wiki-item">✅ AI leltár (5 rendszer dokumentálva)</div>
+<div class="wiki-item">✅ Dokumentációs Skill éles (eu-ai-act-gdpr-doku)</div>
+<div class="wiki-item">✅ Make.com import-ág dokumentálva a nulláról</div>
+</div>
+<div class="wiki-card">
+<h4>🔲 Folyamatban</h4>
+<div class="wiki-item">📧 Levél küldve ügyvédi irodának (vál. 06.30.)</div>
+<div class="wiki-item">🔲 AI Literacy oktatás – KÉSÉSBEN (2025.02. óta kötelező)</div>
+<div class="wiki-item">🔲 Átláthatósági jelzés Make.com válaszba (08.02-ig)</div>
+</div>
+<div class="wiki-card">
+<h4>⚠️ GDPR hiányosság</h4>
+<div class="wiki-item">⚠️ Make.com DPA hiányzik</div>
+<div class="wiki-item">⚠️ AI-modell szolgáltató DPA hiányzik</div>
+<div class="wiki-item">⚠️ Tájékoztató nem említi az AI-folyamatot</div>
+</div>
+<div class="wiki-card">
+<h4>📅 Határidők</h4>
+<div class="wiki-item">06.30. – ügyvédi válasz várt</div>
+<div class="wiki-item">07.31. – AI leltár + jelzés végleges</div>
+<div class="wiki-item">08.02. – EU AI Act átláthatóság hatályba</div>
+</div>
+</div>
+</div>
+<div class="card section-gap">
+<div class="card-title">📚 Wiki & Tudásbázis státusz</div>
+<div class="wiki-grid">
+<div class="wiki-card">
+<h4>📋 Elemzések – kész</h4>
+<div class="wiki-item">✅ 26.057 számlás tételsor (2024–2026.03)</div>
+<div class="wiki-item">✅ Spedíciós számlák CSV</div>
+<div class="wiki-item">✅ Vámkezelési statisztikák (2024–2026.05)</div>
+<div class="wiki-item">✅ 2026 Q1 főkönyv + negyedéves YoY</div>
+</div>
+<div class="wiki-card">
+<h4>🔲 Elemzések – hiányzó</h4>
+<div class="wiki-item">🔲 Kollégák válaszai (B+C kérdéscsoport)</div>
+<div class="wiki-item">✅ Átmenő tételek – pontosítva</div>
+<div class="wiki-item">✅ Bankszámlák (HUF×2, EUR, USD) – elemezve</div>
+<div class="wiki-item">✅ 2024/2025/2026 Q1 főkönyv – elemezve</div>
+</div>
+<div class="wiki-card">
+<h4>📱 Marketing – kész</h4>
+<div class="wiki-item">✅ Facebook + Instagram poszt él</div>
+<div class="wiki-item">✅ LinkedIn poszt él (József profil)</div>
+<div class="wiki-item">✅ GA4 + Pixel + UTM tesztelve</div>
+<div class="wiki-item">✅ Levél küldve külső cégnek</div>
+</div>
+<div class="wiki-card">
+<h4>🤖 AI automatizálás</h4>
+<div class="wiki-item">✅ Export ág kész</div>
+<div class="wiki-item">🔄 IMAP csere folyamatban</div>
+<div class="wiki-item">⏳ Import ág felépítése</div>
+<div class="wiki-item">⏳ Sales Autopilot email sorozat</div>
+</div>
+</div>
+</div>
+<div class="card section-gap">
+<div class="card-title">🗂 Projektek & Iniciatívák</div>
+<div class="grid-3">
+<div class="project-col">
+<h3>🔄 Folyamatban</h3>
+<div class="project-card"><div class="proj-title">Top ügyfél áremelési tárgyalás előkészítése</div></div>
+<div class="project-card new"><div class="proj-title">Sales Autopilot – 200+ fős lista átvitele</div></div>
+<div class="project-card"><div class="proj-title">Marketing átvétel (Facebook/LinkedIn/Ads)</div></div>
+<div class="project-card"><div class="proj-title">Make.com Import ág felépítése</div></div>
+<div class="project-card"><div class="proj-title">IMAP csere (export ág)</div></div>
+<div class="project-card"><div class="proj-title">Nem nyereséges ügyfelek kezelése</div></div>
+<div class="project-card"><div class="proj-title">EU AI Act & GDPR megfelelés</div></div>
+</div>
+<div class="project-col">
+<h3>✅ Elvégzett fejlesztések</h3>
+<div class="project-card done" style="border-left-color:#aaa;background:#f9f9f9;">
+<div class="proj-title" style="color:#888;font-size:11px;">ℹ️ A 2026.06.05. előtti fejlesztések a Notion Wikiben és a rendszerpromptban vannak dokumentálva.</div>
+</div>
+<div class="project-card done"><div class="proj-title">986 ügyfél feltöltve a Notion CRM-be</div></div>
+<div class="project-card done"><div class="proj-title">Pénzügyi értékvesztés azonosítva (árfolyamveszteség)</div></div>
+<div class="project-card done"><div class="proj-title">Vámkezelési + SPED Excel táblák elemzése</div></div>
+<div class="project-card done"><div class="proj-title">Bérlista Excel Feldolgozó GPT – dokumentáció</div></div>
+<div class="project-card done"><div class="proj-title">Bankszámlák (HUF×2, EUR, USD) elemzése</div></div>
+<div class="project-card done"><div class="proj-title">2024/2025/2026 Q1 főkönyv – YoY elemzés</div></div>
+<div class="project-card done"><div class="proj-title">Első LinkedIn + Facebook poszt élesítve</div></div>
+<div class="project-card done"><div class="proj-title">Bankszámla NAV-csatorna feltárva, részletek belső dokumentációban</div></div>
+<div class="project-card done"><div class="proj-title">Átmenő tételek pontosítva (V000100/V000103 cikkszám alapján)</div></div>
+<div class="project-card done"><div class="proj-title">EU AI Act & GDPR Dokumentációs Skill élesítve</div></div>
+<div class="project-card done"><div class="proj-title">GDPR megfelelési levél elküldve (HJT ügyvédi iroda)</div></div>
+<div class="project-card done"><div class="proj-title">Dashboard hibajavítás – Projektek szekció</div></div>
+<div class="project-card done"><div class="proj-title">Konzisztencia-audit: rendszerprompt v4.13 + dashboard/README szinkron</div></div>
+</div>
+<div class="project-col">
+<h3>⏸ Parkoló</h3>
+<div class="project-card parked"><div class="proj-title">Cloudflare Worker – élő Notion API kapcsolat</div></div>
+<div class="project-card parked"><div class="proj-title">Honlap AI-keresőbaráttá alakítása</div></div>
+<div class="project-card parked"><div class="proj-title">Ügyfél-onboarding folyamat standardizálása</div></div>
+<div class="project-card parked"><div class="proj-title">Kapacitástervezés és csapatfejlesztés</div></div>
+<div class="project-card parked"><div class="proj-title">Hosszútávú ügyfélmegtartási rendszer</div></div>
+</div>
+</div>
+<div style="margin-top:10px;font-size:11px;color:var(--gray-mid);">Frissítve: 2026.06.30. (kézzel karbantartott lista – élő Notion-szinkron még nincs kiépítve)</div>
+</div>
+</div>
 <div class="footer">
-  Rosas Logisztikai Kft. · Belső dashboard · <a href="https://rosas-group.com" style="color:#8DB4D9;">rosas-group.com</a> · Minimális kockázat 🟢 · Rendszerprompt v4.10
+Rosas Logisztikai Kft. · Belső dashboard · <a href="https://rosas-group.com" style="color:#8DB4D9;">rosas-group.com</a> · Minimális kockázat 🟢 · Rendszerprompt v4.13
 </div>
-
-
 </body>
 </html>
