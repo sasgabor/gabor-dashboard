@@ -56,7 +56,7 @@ Böngésző → Cloudflare Worker (notion-proxy) → Notion API → vissza
 
 - **Cloudflare Worker:** `https://notion-proxy.sasgabor-sg.workers.dev`
 - **Notion token:** csak a Cloudflare Worker Secrets-ben tárolva, sosem a HTML-ben *(2026.06.23-tól: korábban az `index.html`-ben is szerepelt egy kliens-oldali NOTION_TOKEN konstans nyílt szövegben, ami egy publikus repóban bárki számára olvasható volt — eltávolítva, ld. Changelog. A Worker a kimenő Notion-hívásnál mindig a saját env.NOTION_TOKEN secret-jét használja, a kliens által küldött fejléket figyelmen kívül hagyja.)*
-- ⚠️ A Notion integrations oldal megnyitása (Show gomb) regenerálja és érvényteleníti a tokent – csak akkor nyisd meg, ha valóban szükséges
+- ✅ A Notion integrations oldalon a "Show" és "Copy" ikon korlátlanul, következmény nélkül használható. **Kizárólag** a középső, kör-nyíl "Refresh" ikon regenerálja és érvényteleníti a tokent – csak szándékos token-csere esetén nyomd meg. *(2026.06.29-i javítás: a korábbi állítás, miszerint minden "Show" kattintás érvénytelenít, téves volt — élő Notion-dokumentáció alapján ellenőrizve, lásd rendszerprompt v3.11.)*
 - ⚠️ **Nyitott proxy:** a Worker jelenleg nem ellenőrzi, ki hívja – bárki, aki ismeri a Worker URL-t, közvetlenül tud Notion API-hívásokat indítani rajta keresztül (olvasás ÉS írás is, mert a Worker minden HTTP metódust továbbenged). Mivel az URL nyilvánosan elérhető (a dashboard forráskódjában is szerepel), ez egy nyitott kapu a teljes Notion workspace-hez. Érdemes megfontolni egy megosztott titkos fejlék (pl. egyéni `X-Dashboard-Key` header) hozzáadását a Workerhez, amit csak a dashboard ismer és a Worker ellenőriz, mielőtt továbbítja a kérést.
 - ⚠️ **Rosas (`rosas.html`) jelenleg NEM ezt az architektúrát használja** – teljesen statikus, kézzel karbantartott HTML, élő Notion-Worker kapcsolat nélkül. Ez a szakasz a tervezett/jövőbeli állapotot írja le a Rosas dashboardra nézve.
 
@@ -102,6 +102,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum | Mi változott |
 |-------|---------------|
+| 2026.07.01. | A Rosas-projekt hibakatalógusa alapján végzett kereszt-ellenőrzés talált egy élő hibát: a Technikai architektúra szakasz tévesen állította, hogy minden "Show" kattintás a Notion integrations oldalon regenerálja a tokent – ez már 2026.06.29-én (rendszerprompt v3.11) javítva lett élőben, de ide nem lett átvezetve. Most javítva. |
 | 2026.06.30. | Frissítve a `rosas.html` "Utolsó frissítés" dátuma és a Rosas changelog a 2026.06.30-i dashboard-frissítéssel összhangba hozva (Sales Autopilot szekció, kerekítés-javítás, rendszerprompt-verzió, Golden Brothers meeting). Technikai architektúra szakasz kiegészítve egy jelzéssel, hogy a Rosas dashboard jelenleg NEM a Cloudflare Worker-es élő architektúrát használja, hanem teljesen statikus. Feltöltési mód szakasz kiegészítve a GitHub online szerkesztő encoding-hiba figyelmeztetésével. |
 | 2026.06.23. | Frissítve az `index.html` "Utolsó frissítés" dátuma (a táblázat hónapokig elmaradt a valóságtól); javítva a Notion token elhelyezéséről szóló (akkor már nem igaz) állítás; jelzés a nyitott Worker-proxy kockázatáról; changelog két külön blokkra bontva (Gábor OS / Rosas). |
 | – | Létrehozva (korábban csak cím szerepelt benne) |
