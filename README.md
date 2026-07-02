@@ -92,6 +92,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum | Mi változott |
 |-------|---------------|
+| 2026.07.02. | Konzisztencia-audit (a Gábor OS projektből átvitt önellenőrzési útmutató alapján) 3 tételt talált és zárt le: (1) a `rosas.html` és e README még v4.14-et mutatott a tényleges v4.16 helyett — javítva; (2) a "Csali letöltők – 58 kontakt" szám tévesnek bizonyult (a valós szám 200+, az alvállalkozói egyeztetésből kiderülve) — a `rosas-crm` skillben és a Notion Marketing oldalon is javítva, a rendszerpromptban minden előfordulás frissítve; (3) az EU AI Act szakaszban pontosítva, hogy az AI Literacy oktatási anyag már elkészült (Word, 2026.06.30.), csak a tényleges oktatás megtartása van hátra. |
 | 2026.06.30. | Konzisztencia-audit alapján frissítve: rendszerprompt-verzió jelzés v4.10 → **v4.14** (fejléc + footer); 2025-ös árbevétel KPI-kártya kerekítése 549 M → 550 M javítva (pontos érték: 549,54 M Ft); új **Sales Autopilot – 200+ fős lista átvitele** szekció felvéve (Top prioritás sáv, Következő lépések, Projektek & Iniciatívák/Folyamatban oszlop is kiegészítve); **Golden Brothers 2026.06.30-i meeting eredménye** bekerült a Marketing kártyába (LinkedIn elengedve, Facebook + AI Chatbot + Kvíz folytatódik max 3 hónap átmenettel). |
 | 2026.06.22. | Projektek & Iniciatívák szekció statikus listára váltva (a Cloudflare Worker élő Notion-kapcsolat még nem épült meg, ezért "Nincs adat" jelent meg minden oszlopban – javítva) |
 | 2026.06.22. | EU AI Act & GDPR megfelelési kártya hozzáadva; verzió v4.2 |
