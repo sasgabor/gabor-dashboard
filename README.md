@@ -13,8 +13,8 @@ Két élő, statikus HTML dashboard, GitHub Pages-en hosztolva. Mindkettő Notio
 | Fájl | Mit csinál | Utolsó frissítés |
 |------|------------|-------------------|
 | `index.html` | Gábor OS – személyes önfejlesztési dashboard (Feelfit, Garmin, streak-ek, napirend) | 2026.06.23. |
-| `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR) | 2026.06.30. |
-| `README.md` | Ez a fájl | 2026.06.30. |
+| `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR) | 2026.07.02. |
+| `README.md` | Ez a fájl | 2026.07.02. |
 
 ---
 
@@ -92,6 +92,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum | Mi változott |
 |-------|---------------|
+| 2026.07.02. (2. kör) | A v4.16-os csere után végzett ellenőrző-audit talált egy live hibát: az előző kör sed-parancsa lemaradt a footer sorról (a footer külön sorban végződött "v4.14"-gyel, a fejléc/alcím viszont már helyesen v4.16-ot mutatott) – javítva. Emellett: a fenti "Fájlok" táblázat "Utolsó frissítés" oszlopa a rosas.html/README.md sorokban még 2026.06.30-at mutatott a tényleges 2026.07.02. helyett – javítva (ugyanaz a hiba-mintázat, mint amit korábban az index.html táblázat-soránál is találtunk). A `rosas-session-close` skill FALLBACK objektumában talált `csali_letoltok: 58` érték is elavult volt (a 200+ korrekció óta) – javítva. |
 | 2026.07.02. | Konzisztencia-audit (a Gábor OS projektből átvitt önellenőrzési útmutató alapján) 3 tételt talált és zárt le: (1) a `rosas.html` és e README még v4.14-et mutatott a tényleges v4.16 helyett — javítva; (2) a "Csali letöltők – 58 kontakt" szám tévesnek bizonyult (a valós szám 200+, az alvállalkozói egyeztetésből kiderülve) — a `rosas-crm` skillben és a Notion Marketing oldalon is javítva, a rendszerpromptban minden előfordulás frissítve; (3) az EU AI Act szakaszban pontosítva, hogy az AI Literacy oktatási anyag már elkészült (Word, 2026.06.30.), csak a tényleges oktatás megtartása van hátra. |
 | 2026.06.30. | Konzisztencia-audit alapján frissítve: rendszerprompt-verzió jelzés v4.10 → **v4.14** (fejléc + footer); 2025-ös árbevétel KPI-kártya kerekítése 549 M → 550 M javítva (pontos érték: 549,54 M Ft); új **Sales Autopilot – 200+ fős lista átvitele** szekció felvéve (Top prioritás sáv, Következő lépések, Projektek & Iniciatívák/Folyamatban oszlop is kiegészítve); **Golden Brothers 2026.06.30-i meeting eredménye** bekerült a Marketing kártyába (LinkedIn elengedve, Facebook + AI Chatbot + Kvíz folytatódik max 3 hónap átmenettel). |
 | 2026.06.22. | Projektek & Iniciatívák szekció statikus listára váltva (a Cloudflare Worker élő Notion-kapcsolat még nem épült meg, ezért "Nincs adat" jelent meg minden oszlopban – javítva) |
