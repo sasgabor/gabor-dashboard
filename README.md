@@ -47,7 +47,7 @@ Céges belső dashboard a Rosas Logisztikai Kft. számára.
 
 **Frissítési protokoll:** lásd a `rosas-dashboard` Skill-t (minden munkamenet végén automatikusan ellenőrzendő, kell-e frissítés).
 
-⚠️ **Ismert, még nem javított tétel (2026.07.02.):** az árbevétel-KPI csonkolva "549 M"-et mutat, a helyes, kerekített érték 550 M (rosas-financials: 549 540 ezer Ft). A jelszó `Rosas2026`, ez él, de sor-szintű (view-source) élő megerősítés még nem történt. Lásd Gábor OS Notion "⚖️ Döntési Napló".
+✅ **Lezárt tétel (2026.07.03., élőben megerősítve):** az árbevétel-KPI helyesen, kerekítve 550 M-et mutat (rosas-financials pontos alapadata: 549 540 ezer Ft). A jelszó `Rosas2026`, ez él, és sor-szintű (view-source) élő megerősítés is megtörtént (forráskód 6. sora: `var correct = "Rosas2026";`). Ez a bejegyzés korábban tévesen "még nem javított tételként" volt itt jelezve — ld. Rosas "⚖️ Döntési Napló" (Rosas Térkép oldal) és Rosas rendszerprompt v4.18.
 
 ---
 
@@ -92,6 +92,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum       | Mi változott                                                                                                                                                                   |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026.07.03. | Nincs kódváltozás — csak dokumentációs javítás: a README ezen fájl-táblázatban lévő "árbevétel-KPI 549 M / jelszó nincs megerősítve" megjegyzése elavult volt; élő, forráskód-szintű ellenőrzés megerősítette, hogy a `rosas.html` már 550 M-et és a helyes jelszót tartalmazza. |
 | 2026.06.22. | Projektek & Iniciatívák szekció statikus listára váltva; EU AI Act & GDPR kártya hozzáadva; v4.2                                                                              |
 | 2026.06.09. | Marketing átvétel projekt + 2026 Q1 pénzügyi adatok; v4.0                                                                                                                      |
 | 2026.06.08. | KPI Projekt szekció hozzáadva                                                                                                                                                  |
@@ -100,6 +101,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum       | Mi változott                                                                                                                                                                                                                                                                                            |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026.07.03. | Rosas szakasz "Ismert, még nem javított tétel" figyelmeztetése lezártra frissítve — élő, forráskód-szintű ellenőrzés (Rosas oldalról) megerősítette, hogy a `rosas.html` már 550 M árbevétel-KPI-t és a helyes `Rosas2026` jelszót tartalmazza. Ld. Rosas "⚖️ Döntési Napló".                        |
 | 2026.07.02. | Fájlok táblázat: index.html "utolsó frissítés" dátuma javítva (téves 07.02 → helyes 06.23, kód/komment külön oszlopban). Rosas árbevétel/jelszó ismert-tétel megjegyzés hozzáadva.                                                                                                                    |
 | 2026.07.02. | A "Show gomb regenerál" mítosz ténylegesen javítva és élőben megerősítve.                                                                                                                                                                                                                                |
 | 2026.06.23. | Token elhelyezés javítva, nyitott proxy kockázat jelezve, changelog két blokkra bontva.                                                                                                                                                                                                                 |
