@@ -13,7 +13,7 @@ Két élő, statikus HTML dashboard, GitHub Pages-en hosztolva. Mindkettő Notio
 | Fájl         | Mit csinál                                                                                               | Utolsó frissítés (kód) | Szinkron-komment frissült |
 | ------------ | --------------------------------------------------------------------------------------------------------- | ---------------- | --- |
 | `index.html` | Gábor OS – személyes önfejlesztési dashboard (Feelfit, Garmin, streak-ek, napirend)                       | 2026.06.23.      | 2026.07.01. (csak a komment szövege, kód nem változott) |
-| `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR)  | 2026.06.22.      | – |
+| `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR)  | 2026.07.12.      | – |
 | `README.md`  | Ez a fájl                                                                                                  | 2026.07.02.      | – |
 
 ⚠️ **2026.07.02-i javítás:** az `index.html` sorában korábban tévesen "2026.07.02." szerepelt "utolsó frissítés"-ként — ez saját elírás volt, nem valós adat. A fájl tényleges kódmódosítása 2026.06.23-i, csak a benne lévő szinkron-komment *szövege* frissült 07.01-én (rendszerprompt-verzió-szám). Ez most, egy élő fájl-megnyitással megerősítve, javítva.
@@ -29,6 +29,8 @@ Személyes egészség- és önfejlesztési dashboard.
 **Adatforrás:** Notion *Egészség & Életmód* oldal, kizárólag a lap tetején lévő **"📌 Legfrissebb ismert adatok"** canonical táblából, `parseCanonicalTable()` + `mapCanonicalRows()` olvassa ki élőben (2026.06.23-tól — korábban szétszórt kulcsszó-kereséssel az egész lapon, ez törékeny volt). Ha a Notion API nem elérhető, a dashboard fallback módra vált beégetett, legutóbb ismert értékekkel, 📌-jelzéssel — ezt NEM kell minden adatfrissítésnél bumpolni, csak alkalmanként.
 
 **Frissítési protokoll:** lásd a `gabor-dashboard` Skill-t. Napi adatfeldolgozás után NEM kell automatikusan újragenerálni — a dashboard élőben olvas a Notion canonical tábláról.
+
+📝 **Rendszerprompt élő Notion-másolata** (2026.07.12. óta): a mindenkori Gábor OS rendszerprompt egy 1:1 másolata elérhető Notionban is, hogy Projekten kívüli beszélgetésben se kelljen manuálisan bemásolni — lásd a `gabor-session-close` Skill-t.
 
 ---
 
@@ -46,6 +48,8 @@ Céges belső dashboard a Rosas Logisztikai Kft. számára.
 **Adatforrás:** A Projektek & Iniciatívák szekció jelenleg **kézzel karbantartott statikus lista** (az élő Notion-lekérdezés a Cloudflare Worker hiánya miatt nem működött – ld. Changelog). A többi szekció statikusan generált tartalom.
 
 **Frissítési protokoll:** lásd a `rosas-dashboard` Skill-t (minden munkamenet végén automatikusan ellenőrzendő, kell-e frissítés).
+
+📝 **Rendszerprompt élő Notion-másolata** (2026.07.12. óta): a mindenkori Rosas rendszerprompt egy 1:1 másolata elérhető Notionban is, hogy Projekten kívüli beszélgetésben se kelljen manuálisan bemásolni — lásd a `rosas-session-close` Skill-t.
 
 ✅ **Lezárt tétel (2026.07.03., élőben megerősítve):** az árbevétel-KPI helyesen, kerekítve 550 M-et mutat (rosas-financials pontos alapadata: 549 540 ezer Ft). A jelszó `Rosas2026`, ez él, és sor-szintű (view-source) élő megerősítés is megtörtént (forráskód 6. sora: `var correct = "Rosas2026";`). Ez a bejegyzés korábban tévesen "még nem javított tételként" volt itt jelezve — ld. Rosas "⚖️ Döntési Napló" (Rosas Térkép oldal) és Rosas rendszerprompt v4.18.
 
@@ -83,6 +87,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum       | Mi változott                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026.07.12. | Nincs kódváltozás — a mindenkori rendszerprompt elérhetővé vált egy élő Notion-oldalon is (Projekten kívüli hozzáféréshez), lásd `gabor-session-close` Skill.                                                                                                                                                                                                                                                     |
 | 2026.07.01. | Csak a fájl fejlécében lévő szinkron-komment szövege frissült (rendszerprompt-verzió-szám); a kód nem változott. 2026.07.02-én élő fájl-megnyitással megerősítve.                                                                                                                                                                                                                                               |
 | 2026.06.23. | Architektúra-átalakítás: egyetlen, a Notion canonical táblára célzott parser (`parseCanonicalTable`/`mapCanonicalRows`), egységes `renderDashboard()`. Biztonsági javítás: eltávolítva a kliens-oldali NOTION_TOKEN konstans.                                                                                                                                                                                    |
 | 2026.06.18. | FALLBACK adatok frissítve.                                                                                                                                                                                                                                                                                                                                                                                        |
@@ -92,6 +97,8 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum       | Mi változott                                                                                                                                                                   |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026.07.12. | Nincs kódváltozás — a mindenkori rendszerprompt elérhetővé vált egy élő Notion-oldalon is (Projekten kívüli hozzáféréshez), lásd `rosas-session-close` Skill. |
+| 2026.07.12. | Kódváltozás: az EU AI Act kártya AI Literacy-sora frissítve (valós, folyamatban lévő oktatási státuszra); a deprecated "Rendszerprompt verzió" mezők (fejléc-komment, alcím, footer) ténylegesen törölve a fájlból. |
 | 2026.07.03. | Nincs kódváltozás — csak dokumentációs javítás: a README ezen fájl-táblázatban lévő "árbevétel-KPI 549 M / jelszó nincs megerősítve" megjegyzése elavult volt; élő, forráskód-szintű ellenőrzés megerősítette, hogy a `rosas.html` már 550 M-et és a helyes jelszót tartalmazza. |
 | 2026.06.22. | Projektek & Iniciatívák szekció statikus listára váltva; EU AI Act & GDPR kártya hozzáadva; v4.2                                                                              |
 | 2026.06.09. | Marketing átvétel projekt + 2026 Q1 pénzügyi adatok; v4.0                                                                                                                      |
@@ -101,6 +108,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum       | Mi változott                                                                                                                                                                                                                                                                                            |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026.07.12. | Fájlok táblázat: `rosas.html` "utolsó frissítés (kód)" dátuma 07.12-re javítva. Mindkét szekcióhoz (Gábor OS, Rosas) megjegyzés + changelog-sor a rendszerprompt élő Notion-másolatáról. Rosas changelog: AI Literacy-sor és deprecated verziómezők törlésének rögzítése.                        |
 | 2026.07.03. | Rosas szakasz "Ismert, még nem javított tétel" figyelmeztetése lezártra frissítve — élő, forráskód-szintű ellenőrzés (Rosas oldalról) megerősítette, hogy a `rosas.html` már 550 M árbevétel-KPI-t és a helyes `Rosas2026` jelszót tartalmazza. Ld. Rosas "⚖️ Döntési Napló".                        |
 | 2026.07.02. | Fájlok táblázat: index.html "utolsó frissítés" dátuma javítva (téves 07.02 → helyes 06.23, kód/komment külön oszlopban). Rosas árbevétel/jelszó ismert-tétel megjegyzés hozzáadva.                                                                                                                    |
 | 2026.07.02. | A "Show gomb regenerál" mítosz ténylegesen javítva és élőben megerősítve.                                                                                                                                                                                                                                |
