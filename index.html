@@ -2,512 +2,180 @@
 <html lang="hu">
 <head>
 <script>
-(function() {
-  var correct = "Sasgabor1959";
-  var stored = sessionStorage.getItem("gos_auth");
-  if (stored !== correct) {
-    var attempt = prompt("Jelszó szükséges:");
-    if (attempt !== correct) {
-      document.write("<div style=\"font-family:sans-serif;text-align:center;margin-top:20%\">Hozzáférés megtagadva.<\/div>");
-      document.close();
-      throw new Error("stop");
-    }
-    sessionStorage.setItem("gos_auth", correct);
-  }
-})();
+(function(){var c="Sasgabor1959",s=sessionStorage.getItem("gos_auth");if(s!==c){var a=prompt("Jelszó szükséges:");if(a!==c){document.write("<div style=\"font-family:sans-serif;text-align:center;margin-top:20%\">Hozzáférés megtagadva.<\/div>");document.close();throw new Error("stop");}sessionStorage.setItem("gos_auth",c);}})();
 </script>
 <!--
-  GÁBOR OS DASHBOARD — szinkron infó (ne töröld, ez a verzió-egyeztetéshez kell)
-  Rendszerprompt verzió ennek a fájlnak a generálásakor: v3.7
-  Ez a szinkron-megjegyzés 2026.07.01-én frissült (a kódban nem történt változás): a Rosas
-  hibakatalógus alapján végzett kereszt-ellenőrzés találta, hogy ez a komment 7 rendszerprompt-
-  verziónyit elmaradt a valóságtól. Jelenlegi rendszerprompt verzió: v3.14.
-  Architektúra (2026.06.23-tól): a dashboard MINDEN adatot egyetlen Notion-táblából olvas
-  élőben ("📌 Legfrissebb ismert adatok" szekció az Egészség & Életmód oldal tetején).
-  A FALLBACK konstans csak vészhelyzeti (Notion-kiesés esetén megjelenő) biztonsági másolat —
-  nem kell minden adatfrissítésnél bumpolni, elég ha alkalmanként frissül.
-  Fájl generálva / utoljára ténylegesen módosítva: 2026.06.23. (e komment frissítve: 2026.07.01.)
+  GÁBOR OS DASHBOARD — v4.1 (2026.07.17.). Rendszerprompt: v3.25.
+  CSAK két szekció: (1) 7 napos trend, (2) következő 7 nap.
+  ADATFORRÁSOK:
+  • 7 napos trend: a Notion "📊 Napi mérések – Trend napló (standard)" oldal EGYETLEN
+    táblájából, a meglévő proxyn át (GET blocks/children). Egy sor = egy nap, fix oszlopok.
+    A dashboard az utolsó (max 7) nem-üres értékből számol irányt metrikánként.
+    Ezt a táblát Claude tölti a napi feldolgozáskor; Gábornak nincs teendője.
+  • Következő 7 nap: NEM élő Google Calendar API — a gabor-os rotációból generálva.
+  Ha nincs friss adat, a meglévő idősor alapján akkor is mutat trendet; új adatnál frissül.
 -->
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Gábor OS – Személyes Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<title>Gábor OS – Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600&family=Outfit:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #f5f2ed; --bg2: #edeae3; --surface: #ffffff;
-    --border: #e0dbd2; --text: #1a1714; --text2: #5a5248; --muted: #9a9088;
-    --accent: #2d6a4f; --accent2: #40916c; --accent-light: #d8f3dc;
-    --warn: #e07a00; --red: #c0392b; --blue: #2563eb;
-    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 4px 16px rgba(0,0,0,0.04);
-    --shadow-hover: 0 4px 12px rgba(0,0,0,0.1);
-  }
-  * { margin:0; padding:0; box-sizing:border-box; }
-  body { background:var(--bg); color:var(--text); font-family:'Outfit',sans-serif; min-height:100vh; padding-bottom:48px; }
-
-  .header { background:var(--surface); border-bottom:1px solid var(--border); padding:16px 24px; position:sticky; top:0; z-index:100; display:flex; align-items:center; justify-content:space-between; box-shadow:var(--shadow); }
-  .header h1 { font-family:'Playfair Display',serif; font-size:20px; font-weight:600; }
-  .header .tagline { font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; margin-top:2px; }
-  .header-date { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); background:var(--bg2); padding:6px 12px; border-radius:6px; border:1px solid var(--border); }
-
-  .main { max-width:860px; margin:0 auto; padding:24px 20px; }
-
-  .loading { text-align:center; padding:60px 20px; color:var(--muted); font-family:'JetBrains Mono',monospace; font-size:13px; }
-  .loading-spinner { width:32px; height:32px; border:3px solid var(--border); border-top-color:var(--accent); border-radius:50%; animation:spin 0.8s linear infinite; margin:0 auto 16px; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-
-  .grid { display:grid; gap:16px; }
-  .grid-2 { grid-template-columns:1fr 1fr; }
-  .grid-3 { grid-template-columns:1fr 1fr 1fr; }
-  @media(max-width:620px) { .grid-2,.grid-3 { grid-template-columns:1fr; } .header { flex-direction:column; align-items:flex-start; gap:8px; } }
-
-  .section-label { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.14em; color:var(--muted); text-transform:uppercase; margin:28px 0 12px; }
-
-  .card { background:var(--surface); border:1px solid var(--border); border-radius:10px; padding:20px; box-shadow:var(--shadow); transition:box-shadow 0.2s; }
-  .card:hover { box-shadow:var(--shadow-hover); }
-  .card-header { display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
-  .card-title { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.1em; color:var(--muted); text-transform:uppercase; }
-  .card-date { font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); background:var(--bg2); padding:3px 7px; border-radius:4px; }
-
-  .mission { background:var(--surface); border:1px solid var(--border); border-left:4px solid var(--accent); border-radius:10px; padding:20px 24px; margin-bottom:4px; box-shadow:var(--shadow); cursor:pointer; }
-  .mission-label { font-family:'JetBrains Mono',monospace; font-size:10px; letter-spacing:0.12em; color:var(--accent); text-transform:uppercase; margin-bottom:10px; display:flex; justify-content:space-between; }
-  .mission-text { font-family:'Playfair Display',serif; font-style:italic; font-size:15px; line-height:1.7; color:var(--text2); }
-  .mission-extra { overflow:hidden; max-height:0; transition:max-height 0.4s ease; }
-  .mission-extra.open { max-height:200px; }
-  .mission-decision { margin-top:12px; padding-top:12px; border-top:1px solid var(--border); font-size:13px; color:var(--muted); font-style:italic; }
-
-  .streak-card { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:28px 16px; text-align:center; }
-  .streak-icon { font-size:26px; margin-bottom:8px; }
-  .streak-num { font-family:'Playfair Display',serif; font-size:52px; line-height:1; color:var(--accent); margin-bottom:4px; }
-  .streak-label { font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; letter-spacing:0.08em; }
-  .streak-sub { font-size:11px; color:var(--accent); margin-top:6px; font-weight:500; }
-
-  .metric-row { display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid var(--border); }
-  .metric-row:last-child { border-bottom:none; }
-  .metric-label { font-size:13px; color:var(--text2); }
-  .metric-right { display:flex; align-items:center; gap:8px; }
-  .metric-value { font-family:'JetBrains Mono',monospace; font-size:13px; color:var(--text); }
-  .dot { width:7px; height:7px; border-radius:50%; flex-shrink:0; }
-  .dot-green { background:var(--accent2); }
-  .dot-yellow { background:var(--warn); }
-  .dot-red { background:var(--red); }
-
-  .prog-wrap { margin-bottom:14px; }
-  .prog-wrap:last-child { margin-bottom:0; }
-  .prog-top { display:flex; justify-content:space-between; margin-bottom:5px; }
-  .prog-label { font-size:12px; color:var(--text2); }
-  .prog-val { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); }
-  .prog-bar { height:5px; background:var(--bg2); border-radius:3px; overflow:hidden; }
-  .prog-fill { height:100%; border-radius:3px; }
-  .fill-green { background:var(--accent2); }
-  .fill-yellow { background:var(--warn); }
-  .fill-red { background:var(--red); }
-
-  .today-item { display:flex; align-items:center; gap:14px; padding:11px 4px; border-bottom:1px solid var(--border); cursor:pointer; transition:background 0.15s; border-radius:4px; }
-  .today-item:hover { background:var(--bg); }
-  .today-item:last-child { border-bottom:none; }
-  .today-time { font-family:'JetBrains Mono',monospace; font-size:11px; color:var(--muted); width:38px; flex-shrink:0; }
-  .today-content { flex:1; }
-  .today-name { font-size:13px; color:var(--text); font-weight:500; }
-  .today-sub { font-size:11px; color:var(--muted); margin-top:1px; }
-  .today-badge { font-family:'JetBrains Mono',monospace; font-size:9px; padding:3px 7px; border-radius:4px; flex-shrink:0; }
-  .badge-sport { background:var(--accent-light); color:var(--accent); }
-  .badge-iroda { background:#e8f4fd; color:var(--blue); }
-  .badge-rutin { background:var(--bg2); color:var(--muted); border:1px solid var(--border); }
-  .badge-reflex { background:#fef9e7; color:#b7860a; }
-
-  .goal-card { background:var(--accent-light); border:1px solid #b7e4c7; border-radius:10px; padding:18px 20px; box-shadow:var(--shadow); }
-  .goal-line { font-size:14px; color:var(--text); line-height:1.8; }
-  .goal-line strong { color:var(--accent); }
-
-  .quick-link { display:flex; flex-direction:column; align-items:center; justify-content:center; padding:18px 12px; background:var(--surface); border:1px solid var(--border); border-radius:10px; cursor:pointer; transition:all 0.2s; text-decoration:none; box-shadow:var(--shadow); }
-  .quick-link:hover { box-shadow:var(--shadow-hover); border-color:var(--accent); transform:translateY(-1px); }
-  .quick-link .ql-icon { font-size:22px; margin-bottom:6px; }
-  .quick-link .ql-label { font-size:11px; color:var(--muted); font-family:'JetBrains Mono',monospace; text-align:center; }
-
-  .toggle-arrow { transition:transform 0.3s; display:inline-block; font-size:12px; color:var(--muted); }
-  .toggle-arrow.open { transform:rotate(180deg); }
-  .collapsible { overflow:hidden; max-height:0; transition:max-height 0.4s ease; }
-  .collapsible.open { max-height:600px; }
-
-  .last-updated { text-align:center; font-family:'JetBrains Mono',monospace; font-size:10px; color:var(--muted); margin-top:32px; padding-top:16px; border-top:1px solid var(--border); }
-
-  a { text-decoration:none; color:inherit; }
-
-  @keyframes fadeUp { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:translateY(0)} }
-  .fade-in { animation:fadeUp 0.4s ease forwards; }
+  :root{--bg:#f5f2ed;--bg2:#edeae3;--surface:#fff;--border:#e0dbd2;--text:#1a1714;--text2:#5a5248;--muted:#9a9088;--accent:#2d6a4f;--green:#40916c;--warn:#e07a00;--red:#c0392b;--shadow:0 1px 3px rgba(0,0,0,.06),0 4px 16px rgba(0,0,0,.04);}
+  *{margin:0;padding:0;box-sizing:border-box;}
+  body{background:var(--bg);color:var(--text);font-family:'Outfit',sans-serif;min-height:100vh;padding-bottom:40px;}
+  .header{background:var(--surface);border-bottom:1px solid var(--border);padding:14px 20px;position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;box-shadow:var(--shadow);}
+  .header h1{font-family:'Playfair Display',serif;font-size:19px;font-weight:600;}
+  .header-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);background:var(--bg2);padding:5px 10px;border-radius:6px;}
+  .main{max-width:720px;margin:0 auto;padding:20px 16px;}
+  .loading{text-align:center;padding:50px 20px;color:var(--muted);font-family:'JetBrains Mono',monospace;font-size:13px;}
+  .spin{width:30px;height:30px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp .8s linear infinite;margin:0 auto 14px;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  .sec{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.14em;color:var(--muted);text-transform:uppercase;margin:26px 0 10px;}
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:10px;box-shadow:var(--shadow);overflow:hidden;}
+  .row{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;border-bottom:1px solid var(--border);}
+  .row:last-child{border-bottom:none;}
+  .r-l{display:flex;align-items:center;gap:10px;min-width:0;}
+  .r-ico{font-size:16px;width:22px;text-align:center;flex-shrink:0;}
+  .r-name{font-size:13px;color:var(--text2);}
+  .r-r{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+  .r-val{font-family:'JetBrains Mono',monospace;font-size:14px;color:var(--text);}
+  .trend{font-family:'JetBrains Mono',monospace;font-size:12px;display:flex;align-items:center;gap:3px;min-width:82px;justify-content:flex-end;}
+  .t-up{color:var(--green);}.t-down{color:var(--red);}.t-flat{color:var(--muted);}
+  .arr{font-size:13px;}
+  .day{display:flex;align-items:flex-start;gap:12px;padding:12px 16px;border-bottom:1px solid var(--border);}
+  .day:last-child{border-bottom:none;}
+  .day.today{background:#d8f3dc;}
+  .d-date{font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--muted);width:64px;flex-shrink:0;line-height:1.5;}
+  .d-date b{display:block;color:var(--text);font-size:12px;}
+  .d-body{flex:1;min-width:0;}
+  .d-main{font-size:13px;color:var(--text);font-weight:500;}
+  .d-sub{font-size:11px;color:var(--muted);margin-top:2px;}
+  .d-tag{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 6px;border-radius:4px;flex-shrink:0;background:var(--bg2);color:var(--muted);}
+  .tag-ero{background:#d8f3dc;color:var(--accent);}
+  .tag-ma{background:var(--accent);color:#fff;}
+  .foot{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:26px;padding-top:14px;border-top:1px solid var(--border);line-height:1.7;}
+  @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+  .fade{animation:fu .35s ease forwards;}
 </style>
 </head>
 <body>
-
 <div class="header">
-  <div>
-    <h1>Gábor OS</h1>
-    <div class="tagline">személyes operációs rendszer · 2026</div>
-  </div>
-  <div class="header-date" id="header-date">betöltés...</div>
+  <h1>Gábor OS</h1>
+  <div class="header-date" id="hdate">…</div>
 </div>
-
 <div class="main">
-  <div class="loading" id="loading">
-    <div class="loading-spinner"></div>
-    Notion adatok betöltése...
-  </div>
-
-  <div id="dashboard" style="display:none">
-
-    <div class="mission" onclick="toggleMission()">
-      <div class="mission-label">🎯 Küldetésem <span class="toggle-arrow" id="mission-arrow">▼</span></div>
-      <div class="mission-text">„Minden reggel hálával ébredek azért amim van, és tudatosan dolgozom azon, hogy a lehető legjobb Sas Gáborrá váljak – mert csak így tudok igazán adni."</div>
-      <div class="mission-extra" id="mission-extra">
-        <div style="margin-top:12px;font-family:'Playfair Display',serif;font-style:italic;font-size:14px;line-height:1.7;color:var(--text2)">„Minden nap tanulok valamit amit nem tudtam tegnap, és megteszem azt az egy dolgot – akár csak 5 percet – ami legalább egy ember életét egy kicsit jobbá teszi körülöttem: a cégemben, a családomban. Nem holnaptól. Ma."</div>
-        <div class="mission-decision">🔄 Döntési iránytű: „Illik az identitásomhoz? A lelkiismeretem elégedett?"</div>
-      </div>
-    </div>
-
-    <div class="section-label">🔥 Streak-ek</div>
-    <div class="grid grid-2">
-      <div class="card streak-card">
-        <div class="streak-icon">🍬</div>
-        <div class="streak-num" id="cukor-szam">–</div>
-        <div class="streak-label">Cukormentes nap</div>
-        <div class="streak-sub" id="cukor-sub">betöltés...</div>
-      </div>
-      <div class="card streak-card">
-        <div class="streak-icon">🌾</div>
-        <div class="streak-num" id="liszt-szam">–</div>
-        <div class="streak-label">Lisztmentes nap</div>
-        <div class="streak-sub" id="liszt-sub">betöltés...</div>
-      </div>
-    </div>
-
-    <div class="section-label">⚖️ Egészségi mérők</div>
-    <div class="grid grid-2">
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Mérleg</span>
-          <span class="card-date" id="feelfit-date">–</span>
-        </div>
-        <div class="prog-wrap">
-          <div class="prog-top"><span class="prog-label">Testsúly</span><span class="prog-val" id="suly-val">– kg</span></div>
-          <div class="prog-bar"><div class="prog-fill fill-yellow" id="suly-bar" style="width:0%"></div></div>
-        </div>
-        <div class="prog-wrap">
-          <div class="prog-top"><span class="prog-label">Zsigeri zsír</span><span class="prog-val" id="zsiger-val">–</span></div>
-          <div class="prog-bar"><div class="prog-fill fill-yellow" id="zsiger-bar" style="width:0%"></div></div>
-        </div>
-        <div class="prog-wrap">
-          <div class="prog-top"><span class="prog-label">Testzsír%</span><span class="prog-val" id="testzsir-val">–%</span></div>
-          <div class="prog-bar"><div class="prog-fill fill-red" id="testzsir-bar" style="width:0%"></div></div>
-        </div>
-        <div class="prog-wrap">
-          <div class="prog-top"><span class="prog-label">Izomtömeg</span><span class="prog-val" id="izom-val">– kg</span></div>
-          <div class="prog-bar"><div class="prog-fill fill-green" id="izom-bar" style="width:60%"></div></div>
-        </div>
-        <div style="margin-top:12px">
-          <div onclick="toggleSection('merleg-extra','merleg-arrow')" style="font-size:11px;color:var(--muted);cursor:pointer;font-family:'JetBrains Mono',monospace;">
-            Részletek <span class="toggle-arrow" id="merleg-arrow">▼</span>
-          </div>
-          <div class="collapsible" id="merleg-extra">
-            <div style="margin-top:10px" id="merleg-details"></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="card">
-        <div class="card-header">
-          <span class="card-title">Garmin</span>
-          <span class="card-date" id="garmin-date">–</span>
-        </div>
-        <div id="garmin-metrics"></div>
-      </div>
-    </div>
-
-    <div class="section-label">🎯 Mai cél</div>
-    <div class="goal-card">
-      <div class="goal-line" id="mai-cel">betöltés...</div>
-    </div>
-
-    <div class="section-label">📅 Mai napirend</div>
-    <div class="card" id="napirend-card"></div>
-
-    <div class="section-label">🔗 Gyors linkek</div>
-    <div class="grid grid-3">
-      <a href="https://app.notion.com/p/373a30954a74816d92eefbdd8b7922c8" target="_blank" class="quick-link">
-        <div class="ql-icon">💪</div><div class="ql-label">Egészség & Életmód</div>
-      </a>
-      <a href="https://app.notion.com/p/375a30954a74817e9e65e00118389bb5" target="_blank" class="quick-link">
-        <div class="ql-icon">⚡</div><div class="ql-label">Mikroedzés leírás</div>
-      </a>
-      <a href="https://app.notion.com/p/375a30954a748114bdb4dd3186c6bee9" target="_blank" class="quick-link">
-        <div class="ql-icon">😊</div><div class="ql-label">Arctorna leírás</div>
-      </a>
-      <a href="https://app.notion.com/p/375a30954a748139b14ed183a0131070" target="_blank" class="quick-link">
-        <div class="ql-icon">🪞</div><div class="ql-label">Esti Reflexió</div>
-      </a>
-      <a href="https://app.notion.com/p/373a30954a7481dd9dd5c6864235fdab" target="_blank" class="quick-link">
-        <div class="ql-icon">🎯</div><div class="ql-label">Személyes Fejlődés</div>
-      </a>
-      <a href="https://app.notion.com/p/373a30954a7481a69e3bd4533014a585" target="_blank" class="quick-link">
-        <div class="ql-icon">🗺️</div><div class="ql-label">Navigációs Index</div>
-      </a>
-    </div>
-
-    <div class="last-updated" id="last-updated"></div>
+  <div class="loading" id="loading"><div class="spin"></div>Notion adatok betöltése…</div>
+  <div id="dash" style="display:none">
+    <div class="sec">📈 Elmúlt 7 nap – trend</div>
+    <div class="card" id="trend"></div>
+    <div class="sec">📅 Következő 7 nap</div>
+    <div class="card" id="next7"></div>
+    <div class="foot" id="foot"></div>
   </div>
 </div>
-
 <script>
-// ⚠️ BIZTONSÁGI JAVÍTÁS (2026.06.23.): a korábbi verzióban itt egy valódi Notion token
-// szerepelt nyílt szövegben (NOTION_TOKEN). Ez egy publikus GitHub repóban bárki számára
-// olvasható volt forráskód-szinten (pl. raw.githubusercontent.com-on, jelszó-prompt nélkül).
-// A Cloudflare Worker a kimenő Notion-hívásnál saját env.NOTION_TOKEN secret-jét használja,
-// a kliens által küldött Authorization fejléket figyelmen kívül hagyja — tehát ez a token
-// itt funkcionálisan nem is volt szükséges, csak feleslegesen exponálva volt. Töröld a
-// Notion integrations oldalon és generálj újat, ha még nem tetted meg.
-const EGESZSEG_PAGE_ID = '373a30954a74816d92eefbdd8b7922c8';
-const PROXY = 'https://notion-proxy.sasgabor-sg.workers.dev';
+const TREND_PAGE_ID='3a0a30954a7481a6b8f2f7aa230fe981'; // 📊 Napi mérések – Trend napló (standard)
+const PROXY='https://notion-proxy.sasgabor-sg.workers.dev';
+// Vész-fallback (csak ha a Notion nem elérhető) – az utolsó ismert nem-üres értékek.
+const FALLBACK={hrv:29,pulzus:59,alvas:68,lepesek:6384,suly:93.75,zsiger:14,cukor:34,liszt:24,datum:'07.14.'};
 
-const FALLBACK = {
-  cukor: 34, liszt: 24,
-  suly: 92.45, zsiger: 14, testzsir: 32.0, izom: 59.7, protein: 15.5, bmr: 1727,
-  feelfit_datum: '06.18.',
-  pulzus: 53, hrv: 36, alvas: 48, bojt: '–', bb_reggel: 33, vo2: 27, lepesek: 6004,
-  garmin_datum: '06.17.'
-};
+const DOW=['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
+const DOW_S=['V','H','K','Sze','Cs','P','Szo'];
+const MON=['jan','febr','márc','ápr','máj','jún','júl','aug','szept','okt','nov','dec'];
+const today=()=>{const d=new Date();return `${d.getFullYear()}. ${MON[d.getMonth()]} ${d.getDate()}., ${DOW[d.getDay()]}`;};
 
-const DAYS_HU = ['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
-const MONTHS_HU = ['január','február','március','április','május','június','július','augusztus','szeptember','október','november','december'];
+async function nf(ep){const r=await fetch(`${PROXY}/notion/${ep}`,{headers:{'Notion-Version':'2022-06-28','Content-Type':'application/json'}});if(!r.ok)throw new Error('Notion '+r.status);return r.json();}
+async function getBlocks(id){const d=await nf(`blocks/${id}/children?page_size=100`);const top=d.results||[],out=[];for(const b of top){out.push(b);if(b.has_children){try{const c=await nf(`blocks/${b.id}/children?page_size=100`);out.push(...(c.results||[]));}catch(e){}}}return out;}
+function txt(b){const t=b.type,c=b[t];if(!c)return '';if(t==='table_row'&&c.cells)return c.cells.map(cl=>cl.map(r=>r.plain_text||'').join('')).join(' | ');return (c.rich_text||c.text||[]).map(r=>r.plain_text||'').join('');}
 
-function today() {
-  const d = new Date();
-  return `${d.getFullYear()}. ${MONTHS_HU[d.getMonth()]} ${d.getDate()}., ${DAYS_HU[d.getDay()]}`;
-}
-
-async function notionFetch(endpoint) {
-  const r = await fetch(`${PROXY}/notion/${endpoint}`, {
-    headers: {
-      'Notion-Version': '2022-06-28',
-      'Content-Type': 'application/json'
-    }
-  });
-  if (!r.ok) throw new Error(`Notion API hiba: ${r.status}`);
-  return await r.json();
-}
-
-// Egy szinttel lejjebb is lemegyünk azoknál a blokkoknál, amiknek van gyerekük
-// (pl. egy valódi Notion-tábla table_row-jai a 'table' blokk gyerekei, nem a
-// lap saját gyerekei — enélkül a parser sosem látná a táblasorokat).
-async function getPageBlocks(pageId) {
-  const data = await notionFetch(`blocks/${pageId}/children?page_size=100`);
-  const top = data.results || [];
-  const expanded = [];
-  for (const block of top) {
-    expanded.push(block);
-    if (block.has_children) {
-      try {
-        const child = await notionFetch(`blocks/${block.id}/children?page_size=100`);
-        expanded.push(...(child.results || []));
-      } catch (e) { /* egy gyerek-lekérdezés hibája ne dobja el az egész oldalt */ }
+// A standard idősor-tábla beolvasása: minden dátummal kezdődő sor egy nap.
+const COLS=['datum','hrv','pulzus','alvas','lepesek','suly','zsiger','testzsir','izom','bmr','cukor','liszt'];
+function num(s){if(!s)return null;const m=s.match(/-?\d+[.,]?\d*/);return m?parseFloat(m[0].replace(',','.')):null;}
+function parseTrend(blocks){
+  const rows=[];
+  for(const b of blocks){
+    const parts=txt(b).split('|').map(x=>x.trim());
+    if(parts.length>=12 && /^\d{4}-\d{2}-\d{2}$/.test(parts[0])){
+      const o={datum:parts[0]};
+      for(let i=1;i<COLS.length;i++)o[COLS[i]]=num(parts[i]);
+      rows.push(o);
     }
   }
-  return expanded;
-}
-
-function extractText(block) {
-  const type = block.type;
-  const content = block[type];
-  if (!content) return '';
-  if (type === 'table_row' && content.cells) {
-    return content.cells.map(cell => cell.map(r => r.plain_text || '').join('')).join(' | ');
-  }
-  const rich = content.rich_text || content.text || [];
-  return rich.map(r => r.plain_text || '').join('');
-}
-
-// ⚠️ EGYETLEN HITELES FORRÁS (2026.06.23-tól): minden élő adat KIZÁRÓLAG a Notion
-// Egészség & Életmód oldal "📌 Legfrissebb ismert adatok" táblájából jön. Ez a
-// függvény NEM keresgél kulcsszavakat az egész lapon (az volt a régi, törékeny
-// módszer) — csak ezt az egy szekciót olvassa be, sor-struktúrában (Mutató | Érték | Dátum),
-// és működik mind valódi Notion-táblasorral, mind egyszerű "Label | Érték | Dátum" szöveggel.
-function parseCanonicalTable(blocks) {
-  let inSection = false;
-  const rows = [];
-  for (const block of blocks) {
-    const isHeading = block.type === 'heading_1' || block.type === 'heading_2' || block.type === 'heading_3';
-    const text = extractText(block);
-    if (isHeading && /Legfrissebb ismert adatok/i.test(text)) { inSection = true; continue; }
-    if (inSection && isHeading) break;
-    if (!inSection) continue;
-    const m = text.match(/^\s*([^|]+?)\s*\\?\|\s*([^|]+?)\s*\\?\|\s*([^|]+?)\s*\\?\|?\s*$/);
-    if (m) rows.push({ label: m[1].trim(), value: m[2].trim(), date: m[3].trim() });
-  }
+  rows.sort((a,b)=>a.datum<b.datum?-1:1); // időrend (régi→új)
   return rows;
 }
-
-function mapCanonicalRows(rows) {
-  const num = (s) => { const m = (s || '').match(/-?\d+[.,]?\d*/); return m ? parseFloat(m[0].replace(',', '.')) : null; };
-  const find = (re) => rows.find(r => re.test(r.label));
-  const fieldTests = {
-    suly: /Testsúly/i, zsiger: /Zsigeri zsír/i, testzsir: /Testzsír/i, izom: /Izomtömeg/i,
-    protein: /Protein/i, bmr: /BMR/i, pulzus: /pulzus/i, hrv: /HRV/i,
-    lepesek: /lépés/i, alvas: /Alváspontszám/i, bb_reggel: /BB reggel/i,
-    cukor: /Cukormentes/i, liszt: /Lisztmentes/i
-  };
-  const out = {};
-  for (const [key, re] of Object.entries(fieldTests)) {
-    const row = find(re);
-    if (row) out[key] = { raw: row.value, num: num(row.value), date: row.date };
-  }
-  return out;
+// metrikánként: utolsó max 7 nem-üres érték; irány = legrégebbi → legújabb azok közül
+function trendOf(rows,key,goodUp){
+  const vals=rows.map(r=>r[key]).filter(v=>v!=null);
+  const win=vals.slice(-7);
+  const cur=win.length?win[win.length-1]:(FALLBACK[key]??null);
+  if(win.length<2)return {cur,html:'<span class="t-flat">– kevés adat</span>'};
+  const d=win[win.length-1]-win[0], days=win.length;
+  if(Math.abs(d)<1e-9)return {cur,html:`<span class="t-flat"><span class="arr">→</span> 0 · ${days} mérés</span>`};
+  const up=d>0, good=(up===goodUp), cls=good?'t-up':'t-down', arr=up?'▲':'▼';
+  const dd=Math.round(Math.abs(d)*100)/100;
+  return {cur,html:`<span class="${cls}"><span class="arr">${arr}</span> ${up?'+':'−'}${dd} · ${days} mérés</span>`};
 }
+function fmt(v,suf){return v==null?'–':(v.toLocaleString('hu')+(suf||''));}
 
-function getDayType() {
-  const day = new Date().getDay();
-  const types = {
-    1: { name:'Hétfő', type:'🧘 Könnyű nap (meditáció + jóga + nyújtás)', badge:'badge-rutin', hasIroda:true, hasSzauna:true, hasOxi:false },
-    2: { name:'Kedd', type:'💪 Erő A (30–40 perc)', badge:'badge-sport', hasIroda:true, hasSzauna:false, hasOxi:false },
-    3: { name:'Szerda', type:'🧘 Könnyű nap (meditáció + Thai chi + nyújtás)', badge:'badge-rutin', hasIroda:true, hasSzauna:true, hasOxi:false },
-    4: { name:'Csütörtök', type:'💪 Erő B (30–40 perc)', badge:'badge-sport', hasIroda:true, hasSzauna:false, hasOxi:true },
-    5: { name:'Péntek', type:'🧘 Könnyű nap (meditáció + jóga + nyújtás)', badge:'badge-rutin', hasIroda:true, hasSzauna:true, hasOxi:false },
-    6: { name:'Szombat', type:'🚶 Hosszú séta (4–5 km + Thai chi)', badge:'badge-rutin', hasIroda:false, hasSzauna:true, hasOxi:true },
-    0: { name:'Vasárnap', type:'😴 Pihenő nap (meditáció + könnyű nyújtás)', badge:'badge-rutin', hasIroda:false, hasSzauna:false, hasOxi:false }
-  };
-  return types[day];
-}
-
-function renderNapirend(dayInfo) {
-  const card = document.getElementById('napirend-card');
-  card.innerHTML = `<div class="card-title" style="margin-bottom:16px">${dayInfo.name} – ${dayInfo.type}</div>`;
-  const items = [];
-  items.push({ time:'06:00', name:`💪 ${dayInfo.type}`, sub:'reggeli protokoll + edzés', badge:dayInfo.badge, link:'https://app.notion.com/p/373a30954a74816d92eefbdd8b7922c8' });
-  items.push({ time:'06:00', name:'🧭 Napi Iránytű olvasás', sub:'küldetés · adatok · célok', badge:'badge-rutin', link:null });
-  if (dayInfo.hasIroda) {
-    items.push({ time:'10:00', name:'⚡ Mikroedzés', sub:'10 perc – irodai edzés', badge:'badge-iroda', link:'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' });
-    items.push({ time:'11:00', name:'😊 Arctorna', sub:'2 perc · 6 gyakorlat', badge:'badge-iroda', link:'https://app.notion.com/p/375a30954a748114bdb4dd3186c6bee9' });
-    items.push({ time:'14:00', name:'⚡ Mikroedzés', sub:'10 perc – irodai edzés', badge:'badge-iroda', link:'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' });
-    items.push({ time:'16:00', name:'😊 Arctorna', sub:'2 perc · 6 gyakorlat', badge:'badge-iroda', link:'https://app.notion.com/p/375a30954a748114bdb4dd3186c6bee9' });
-    items.push({ time:'16:30', name:'⚡ Mikroedzés', sub:'10 perc – irodai edzés', badge:'badge-iroda', link:'https://app.notion.com/p/375a30954a74817e9e65e00118389bb5' });
-  }
-  if (dayInfo.hasOxi && dayInfo.hasSzauna) {
-    items.push({ time:'délelőtt', name:'🌬️ Oxigénkezelés + 🔥 Szauna', sub:'ALT-OE-87 · szauna 30p, 60–65°C', badge:'badge-rutin', link:null });
-  } else if (dayInfo.hasOxi) {
-    items.push({ time:'este', name:'🌬️ Oxigénkezelés', sub:'ALT-OE-87 · 15–20 perc', badge:'badge-rutin', link:null });
-  } else if (dayInfo.hasSzauna) {
-    items.push({ time:'este', name:'🚶 Séta + 🔥 Szauna + 🚿 Hideg zuhany', sub:'3–4 km orrlélegzéssel · szauna · hideg víz', badge:'badge-rutin', link:null });
-  }
-  items.push({ time:'21:00', name:'🪞 Esti Reflexió', sub:'5–10 perc · 4 kérdés · Notionbe', badge:'badge-reflex', link:'https://app.notion.com/p/375a30954a748139b14ed183a0131070' });
-  items.forEach(item => {
-    const el = document.createElement('div');
-    el.className = 'today-item';
-    if (item.link) el.onclick = () => window.open(item.link, '_blank');
-    el.innerHTML = `<span class="today-time">${item.time}</span><div class="today-content"><div class="today-name">${item.name}</div><div class="today-sub">${item.sub}</div></div><span class="today-badge ${item.badge}">${item.badge.replace('badge-','').toUpperCase()}</span>`;
-    card.appendChild(el);
-  });
-}
-
-function renderGarmin(data) {
-  const metrics = [
-    { label:'Ny. pulzus', value:data.pulzus?`${data.pulzus} bpm`:'–', dot:data.pulzus&&data.pulzus<60?'dot-green':'dot-yellow' },
-    { label:'HRV 7 napos', value:data.hrv?`${data.hrv} → 45+`:'–', dot:data.hrv&&data.hrv>=43?'dot-green':'dot-yellow' },
-    { label:'Alváspontszám', value:data.alvas?`${data.alvas}/100`:'–', dot:data.alvas&&data.alvas>=85?'dot-green':'dot-yellow' },
-    { label:'Böjt', value:data.bojt?`~${data.bojt}`:'–', dot:'dot-green' },
-    { label:'BB reggel', value:data.bb_reggel?`${data.bb_reggel}/100`:'–', dot:data.bb_reggel&&data.bb_reggel>=80?'dot-green':'dot-yellow' },
-    { label:'VO2max', value:data.vo2?`${data.vo2} → 35+`:'–', dot:data.vo2&&data.vo2>=30?'dot-yellow':'dot-red' },
-    { label:'Lépések', value:data.lepesek?data.lepesek.toLocaleString('hu'):'–', dot:data.lepesek&&data.lepesek>=8000?'dot-green':'dot-yellow' }
+function renderTrend(rows){
+  const M=[
+    {ic:'❤️',n:'HRV (7n)',    k:'hrv',    up:true, suf:' → 45+'},
+    {ic:'💓',n:'Ny. pulzus',  k:'pulzus', up:false,suf:' bpm'},
+    {ic:'😴',n:'Alvás',       k:'alvas',  up:true, suf:'/100'},
+    {ic:'👟',n:'Lépések',     k:'lepesek',up:true, suf:''},
+    {ic:'⚖️',n:'Testsúly',    k:'suly',   up:false,suf:' kg'},
+    {ic:'🔴',n:'Zsigeri zsír',k:'zsiger', up:false,suf:''},
+    {ic:'🍬',n:'Cukor streak',k:'cukor',  up:true, suf:' nap'},
+    {ic:'🌾',n:'Liszt streak',k:'liszt',  up:true, suf:' nap'},
   ];
-  document.getElementById('garmin-metrics').innerHTML = metrics.map(m => `<div class="metric-row"><span class="metric-label">${m.label}</span><div class="metric-right"><span class="metric-value">${m.value}</span><div class="dot ${m.dot}"></div></div></div>`).join('');
+  document.getElementById('trend').innerHTML=M.map(m=>{
+    const t=trendOf(rows,m.k,m.up);
+    return `<div class="row"><div class="r-l"><span class="r-ico">${m.ic}</span><span class="r-name">${m.n}</span></div><div class="r-r"><span class="r-val">${fmt(t.cur,m.suf)}</span><span class="trend">${t.html}</span></div></div>`;
+  }).join('');
 }
 
-// Egységes renderelő: akár élő Notion-adatból, akár FALLBACK-ből jön a `fields`,
-// UGYANEZ a függvény rajzolja ki a dashboardot. Nincs külön "élő" és "fallback" kódág,
-// ami egymástól eltérhetne — ez pontosan az ismétlődő hibák egyik fő oka volt.
-function renderDashboard(fields, opts) {
-  const cukor = fields.cukor ? fields.cukor.num : FALLBACK.cukor;
-  const liszt = fields.liszt ? fields.liszt.num : FALLBACK.liszt;
-  const cukorLive = !!fields.cukor;
-  const lisztLive = !!fields.liszt;
-  document.getElementById('cukor-szam').textContent = cukor;
-  document.getElementById('liszt-szam').textContent = liszt;
-  document.getElementById('cukor-sub').textContent = cukorLive ? `→ ma a ${cukor+1}. lehet!` : `→ ma a ${cukor+1}. lehet! · 📌 utolsó ismert`;
-  document.getElementById('liszt-sub').textContent = lisztLive ? `→ ma a ${liszt+1}. lehet!` : `→ ma a ${liszt+1}. lehet! · 📌 utolsó ismert`;
-
-  const feelfitDate = fields.suly ? fields.suly.date : FALLBACK.feelfit_datum;
-  const feelfitLive = !!fields.suly;
-  document.getElementById('feelfit-date').textContent = feelfitLive ? feelfitDate : `${feelfitDate} 📌`;
-  document.getElementById('suly-val').textContent = `${fields.suly ? fields.suly.num : FALLBACK.suly} → 79.9 kg`;
-  document.getElementById('suly-bar').style.width = '55%';
-  document.getElementById('zsiger-val').textContent = `${fields.zsiger ? fields.zsiger.num : FALLBACK.zsiger} → 7–8`;
-  document.getElementById('zsiger-bar').style.width = '65%';
-  document.getElementById('testzsir-val').textContent = `${fields.testzsir ? fields.testzsir.num : FALLBACK.testzsir}% → 25%`;
-  document.getElementById('testzsir-bar').style.width = '80%';
-  document.getElementById('izom-val').textContent = `${fields.izom ? fields.izom.num : FALLBACK.izom} kg ↑`;
-
-  const garminDate = fields.pulzus ? fields.pulzus.date : FALLBACK.garmin_datum;
-  const garminLive = !!fields.pulzus;
-  document.getElementById('garmin-date').textContent = garminLive ? garminDate : `${garminDate} 📌`;
-  renderGarmin({
-    pulzus: fields.pulzus ? fields.pulzus.num : FALLBACK.pulzus,
-    hrv: fields.hrv ? fields.hrv.num : FALLBACK.hrv,
-    alvas: fields.alvas ? fields.alvas.num : FALLBACK.alvas,
-    bojt: FALLBACK.bojt, // a böjt nincs a kanonikus táblában, mindig a napi naplóból kellene, ezért itt mindig az utolsó ismert
-    bb_reggel: fields.bb_reggel ? fields.bb_reggel.num : FALLBACK.bb_reggel,
-    vo2: FALLBACK.vo2, // a VO2max sincs a kanonikus táblában (szándékosan)
-    lepesek: fields.lepesek ? fields.lepesek.num : FALLBACK.lepesek
-  });
-  document.getElementById('merleg-details').innerHTML = `
-    <div class="metric-row"><span class="metric-label">Protein</span><span class="metric-value">${fields.protein ? fields.protein.num : FALLBACK.protein}%</span></div>
-    <div class="metric-row"><span class="metric-label">BMR</span><span class="metric-value">${fields.bmr ? fields.bmr.num : FALLBACK.bmr} kcal</span></div>
-  `;
-  const zsigerVal = fields.zsiger ? fields.zsiger.num : FALLBACK.zsiger;
-  document.getElementById('mai-cel').innerHTML = `
-    🍬 Legyen ez a <strong>${cukor+1}. cukormentes napod!</strong><br>
-    🌾 Legyen ez a <strong>${liszt+1}. lisztmentes napod!</strong><br>
-    ⏱️ Böjt cél: <strong>16h+</strong> &nbsp;·&nbsp; Zsigeri zsír: <strong>${zsigerVal} → vissza 13-ra!</strong>
-    ${opts.fullyLive ? '' : `<br><span style="font-size:11px;color:var(--muted)">📌 ${opts.note}</span>`}
-  `;
-  renderNapirend(getDayType());
-  document.getElementById('last-updated').textContent = opts.fullyLive
-    ? `Utoljára frissítve: ${new Date().toLocaleTimeString('hu-HU')} · minden adat élő Notion-lekérdezésből`
-    : `Utoljára frissítve: ${new Date().toLocaleTimeString('hu-HU')} · 📌 ${opts.note}`;
-  document.getElementById('loading').style.display = 'none';
-  document.getElementById('dashboard').style.display = 'block';
-  document.getElementById('dashboard').classList.add('fade-in');
-}
-
-async function loadDashboard() {
-  document.getElementById('header-date').textContent = today();
-  try {
-    const blocks = await getPageBlocks(EGESZSEG_PAGE_ID);
-    const rows = parseCanonicalTable(blocks);
-    if (rows.length === 0) {
-      // A kanonikus táblát nem találtuk (átnevezték a szekciót, vagy üres) – ugyanúgy
-      // fallback-ként kezeljük, mint egy API-hibát, csak más a hibaüzenet.
-      renderDashboard({}, { fullyLive: false, note: 'a kanonikus Notion-tábla nem található, az utolsó ismert (beégetett) adatokat látod' });
-      return;
-    }
-    const fields = mapCanonicalRows(rows);
-    const expectedKeys = ['suly','zsiger','testzsir','izom','protein','bmr','pulzus','hrv','lepesek','alvas','bb_reggel','cukor','liszt'];
-    const missing = expectedKeys.filter(k => !fields[k]);
-    renderDashboard(fields, {
-      fullyLive: missing.length === 0,
-      note: missing.length ? `a kanonikus táblából néhány mező nem volt kiolvasható (${missing.join(', ')}), azoknál az utolsó ismert érték látható` : ''
-    });
-  } catch(err) {
-    console.warn('Notion API hiba, fallback:', err.message);
-    renderDashboard({}, { fullyLive: false, note: 'Notion API nem elérhető' });
+// Következő 7 nap: gabor-os "Naptár-sablonok" rotációból generálva
+const TPL={
+  1:{t:'🧘 Könnyű nap + iroda 3×',tag:'',sub:'Meditáció + jóga + nyújtás · ⚡10/14/16:30'},
+  2:{t:'💪 Erő A edzés (30–40p)',tag:'ero',sub:'Bicepsz · fekvőtámasz · guggolás · plank'},
+  3:{t:'🧘 Könnyű nap + iroda 3×',tag:'',sub:'Meditáció + Thai chi + nyújtás · ⚡10/14/16:30'},
+  4:{t:'💪 Erő B edzés (30–40p)',tag:'ero',sub:'Bolgár guggolás · superman · csípőhíd · oxi'},
+  5:{t:'🧘 Könnyű nap + iroda 3×',tag:'',sub:'Meditáció + jóga + nyújtás · ⚡10/14/16:30'},
+  6:{t:'🚶 Hosszú séta + szauna nap',tag:'',sub:'4–5 km + Thai chi',extra:'🗓️ 09:00 Heti tervezés'},
+  0:{t:'😴 Pihenő nap',tag:'',sub:'Meditáció + könnyű nyújtás',extra:'📝 21:00 Heti értékelés'}
+};
+function renderNext7(){
+  const base=new Date();base.setHours(0,0,0,0);let html='';
+  for(let i=0;i<7;i++){
+    const d=new Date(base);d.setDate(base.getDate()+i);const dow=d.getDay();const p=TPL[dow];
+    const isToday=i===0;
+    const tag=isToday?'<span class="d-tag tag-ma">MA</span>':(p.tag==='ero'?'<span class="d-tag tag-ero">ERŐ</span>':'');
+    html+=`<div class="day${isToday?' today':''}"><div class="d-date"><b>${DOW_S[dow]}</b>${d.getMonth()+1}.${d.getDate()}.</div><div class="d-body"><div class="d-main">${p.t}</div><div class="d-sub">${p.sub}${p.extra?' · '+p.extra:''}</div></div>${tag}</div>`;
   }
+  document.getElementById('next7').innerHTML=html;
 }
 
-function toggleMission() {
-  document.getElementById('mission-extra').classList.toggle('open');
-  document.getElementById('mission-arrow').classList.toggle('open');
+async function load(){
+  document.getElementById('hdate').textContent=today();
+  let note='', rows=[];
+  try{
+    rows=parseTrend(await getBlocks(TREND_PAGE_ID));
+    if(rows.length===0){renderTrend([]);note='📌 a trend-tábla nem olvasható – utolsó ismert értékek';}
+    else{
+      renderTrend(rows);
+      const last=rows[rows.length-1].datum.slice(5).replace('-','.')+'.';
+      note=`trend a Notion idősorból · ${rows.length} nap · utolsó adat: ${last}`;
+    }
+  }catch(e){renderTrend([]);note='📌 Notion API nem elérhető – utolsó ismert értékek';}
+  renderNext7();
+  document.getElementById('foot').innerHTML=
+    `Frissítve: ${new Date().toLocaleTimeString('hu-HU')} · ${note}<br>`+
+    `Következő 7 nap: gabor-os rotációból generálva (nem élő Calendar-API)`;
+  document.getElementById('loading').style.display='none';
+  const dash=document.getElementById('dash');dash.style.display='block';dash.classList.add('fade');
 }
-function toggleSection(id, arrowId) {
-  document.getElementById(id).classList.toggle('open');
-  document.getElementById(arrowId).classList.toggle('open');
-}
-
-loadDashboard();
+load();
 </script>
 </body>
 </html>
