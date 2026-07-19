@@ -5,8 +5,14 @@
 (function(){var c="Sasgabor1959",s=sessionStorage.getItem("gos_auth");if(s!==c){var a=prompt("Jelszó szükséges:");if(a!==c){document.write("<div style=\"font-family:sans-serif;text-align:center;margin-top:20%\">Hozzáférés megtagadva.<\/div>");document.close();throw new Error("stop");}sessionStorage.setItem("gos_auth",c);}})();
 </script>
 <!--
-  GÁBOR OS DASHBOARD — v4.1 (2026.07.17.). Rendszerprompt: v3.25.
-  CSAK két szekció: (1) 7 napos trend, (2) következő 7 nap.
+  GÁBOR OS DASHBOARD — v4.3 (2026.07.18.).
+  Szekciók: (1) állapot-sáv, (2) 7 napos trend, (3) következő 7 nap.
+  v4.2: 🕐 Böjt oszlop (13.) + 12h+ böjt streak.
+  v4.3: 🍷 Alkohol oszlop (14.) + alkoholmentes streak + FIGYELMEZTETŐ sáv.
+    Gábor kérése (2026.07.18.): a rendszer ne csak udvariasan jelöljön, hanem
+    szóljon rá, ha a számok rossz irányba mennek. A figyelmeztetés NEM kozmetika:
+    a küszöbök a saját céljaiból jönnek (HRV 45+, alvás 85+, zsigeri 7-8, böjt 16h).
+    Új oszlop MINDIG a tábla végére, hogy a régi parser se olvasson rossz oszlopot.
   ADATFORRÁSOK:
   • 7 napos trend: a Notion "📊 Napi mérések – Trend napló (standard)" oldal EGYETLEN
     táblájából, a meglévő proxyn át (GET blocks/children). Egy sor = egy nap, fix oszlopok.
@@ -53,6 +59,23 @@
   .d-tag{font-family:'JetBrains Mono',monospace;font-size:9px;padding:2px 6px;border-radius:4px;flex-shrink:0;background:var(--bg2);color:var(--muted);}
   .tag-ero{background:#d8f3dc;color:var(--accent);}
   .tag-ma{background:var(--accent);color:#fff;}
+  .streak{padding:0;}
+  .st-grid{display:grid;grid-template-columns:1fr 1fr;}
+  .st-box{padding:16px 12px;text-align:center;border-right:1px solid var(--border);}
+  .st-box:last-child{border-right:none;}
+  .st-box.st-on{background:linear-gradient(135deg,#d8f3dc,#fff);}
+  .st-box.st-bad{background:linear-gradient(135deg,#fdecea,#fff);}
+  .st-num{font-family:'JetBrains Mono',monospace;font-size:34px;font-weight:500;color:var(--accent);line-height:1;}
+  .st-box.st-bad .st-num{color:var(--red);}
+  .st-lab{font-size:12px;color:var(--text2);margin-top:6px;}
+  .st-mini{font-family:'JetBrains Mono',monospace;font-size:9.5px;color:var(--muted);margin-top:4px;line-height:1.5;}
+  .st-main{font-family:'Playfair Display',serif;font-size:18px;padding:16px;text-align:center;}
+  .fig{background:#fff;border:1px solid #f0c0b8;border-left:4px solid var(--red);border-radius:10px;padding:14px 16px;margin-bottom:6px;box-shadow:var(--shadow);}
+  .fig-h{font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:10px;}
+  .fig-i{margin-bottom:9px;}
+  .fig-t{font-size:13.5px;color:var(--text);line-height:1.5;}
+  .fig-s{font-size:11.5px;color:var(--text2);margin-top:2px;line-height:1.55;}
+  .fig-f{font-size:11.5px;color:var(--text2);margin-top:12px;padding-top:10px;border-top:1px solid var(--border);line-height:1.6;font-style:italic;}
   .foot{text-align:center;font-family:'JetBrains Mono',monospace;font-size:10px;color:var(--muted);margin-top:26px;padding-top:14px;border-top:1px solid var(--border);line-height:1.7;}
   @keyframes fu{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
   .fade{animation:fu .35s ease forwards;}
@@ -66,6 +89,9 @@
 <div class="main">
   <div class="loading" id="loading"><div class="spin"></div>Notion adatok betöltése…</div>
   <div id="dash" style="display:none">
+    <div class="fig" id="figyelem" style="display:none"></div>
+    <div class="sec">📊 Hol tartasz most</div>
+    <div class="card streak" id="allapot"></div>
     <div class="sec">📈 Elmúlt 7 nap – trend</div>
     <div class="card" id="trend"></div>
     <div class="sec">📅 Következő 7 nap</div>
@@ -77,7 +103,9 @@
 const TREND_PAGE_ID='3a0a30954a7481a6b8f2f7aa230fe981'; // 📊 Napi mérések – Trend napló (standard)
 const PROXY='https://notion-proxy.sasgabor-sg.workers.dev';
 // Vész-fallback (csak ha a Notion nem elérhető) – az utolsó ismert nem-üres értékek.
-const FALLBACK={hrv:29,pulzus:59,alvas:68,lepesek:6384,suly:93.75,zsiger:14,cukor:34,liszt:24,datum:'07.14.'};
+const FALLBACK={hrv:29,pulzus:59,alvas:68,lepesek:6384,suly:93.75,zsiger:14,cukor:34,liszt:24,bojt:13.4,alkohol:78,datum:'07.16.'};
+// Megígért vérvétel dátuma. Ha megtörtént, Claude törli/átállítja a következő generáláskor.
+const VERVETEL='2026-07-13';
 
 const DOW=['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
 const DOW_S=['V','H','K','Sze','Cs','P','Szo'];
@@ -89,7 +117,7 @@ async function getBlocks(id){const d=await nf(`blocks/${id}/children?page_size=1
 function txt(b){const t=b.type,c=b[t];if(!c)return '';if(t==='table_row'&&c.cells)return c.cells.map(cl=>cl.map(r=>r.plain_text||'').join('')).join(' | ');return (c.rich_text||c.text||[]).map(r=>r.plain_text||'').join('');}
 
 // A standard idősor-tábla beolvasása: minden dátummal kezdődő sor egy nap.
-const COLS=['datum','hrv','pulzus','alvas','lepesek','suly','zsiger','testzsir','izom','bmr','cukor','liszt'];
+const COLS=['datum','hrv','pulzus','alvas','lepesek','suly','zsiger','testzsir','izom','bmr','cukor','liszt','bojt','alkohol'];
 function num(s){if(!s)return null;const m=s.match(/-?\d+[.,]?\d*/);return m?parseFloat(m[0].replace(',','.')):null;}
 function parseTrend(blocks){
   const rows=[];
@@ -118,6 +146,53 @@ function trendOf(rows,key,goodUp){
 }
 function fmt(v,suf){return v==null?'–':(v.toLocaleString('hu')+(suf||''));}
 
+// 🕐 12h+ böjt streak – a Böjt oszlopból származtatva (nem külön Notion-mező).
+function streakOf(rows,key,ok){
+  const v=rows.filter(r=>r[key]!=null).map(r=>r[key]);
+  let cur=0;for(let i=v.length-1;i>=0;i--){if(ok(v[i]))cur++;else break;}
+  let best=0,run=0;for(const x of v){if(ok(x)){run++;if(run>best)best=run;}else run=0;}
+  return {cur,best,n:v.length};
+}
+function avg7(rows,key){
+  const v=rows.filter(r=>r[key]!=null).map(r=>r[key]).slice(-7);
+  return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length*10)/10:null;
+}
+function napokOta(iso){return Math.floor((new Date()-new Date(iso))/86400000);}
+
+function renderAllapot(rows){
+  const b=streakOf(rows,'bojt',x=>x>=12), a=streakOf(rows,'alkohol',x=>x===0);
+  const bA=avg7(rows,'bojt'), aH=rows.filter(r=>r.alkohol!=null).slice(-7).reduce((s,r)=>s+r.alkohol,0);
+  const el=document.getElementById('allapot');
+  if(!b.n&&!a.n){el.innerHTML='<div class="st-main">Még nincs elég adat</div>';return;}
+  el.innerHTML=
+    `<div class="st-grid">`+
+      `<div class="st-box${b.cur>0?' st-on':''}"><div class="st-num">${b.cur}</div><div class="st-lab">🕐 nap 12h+ böjt</div><div class="st-mini">leghosszabb: ${b.best} · átlag: ${bA!=null?bA+' óra':'–'}</div></div>`+
+      `<div class="st-box${a.cur>0?' st-on':' st-bad'}"><div class="st-num">${a.cur}</div><div class="st-lab">🍷 alkoholmentes nap</div><div class="st-mini">leghosszabb: ${a.best} · 7 nap alatt: ${aH} g</div></div>`+
+    `</div>`;
+}
+
+// FIGYELMEZTETŐ sáv – a saját céljaidból számolt küszöbökkel. Nem díszítés.
+function renderFigyelem(rows){
+  const el=document.getElementById('figyelem'), w=[];
+  const last=k=>{const v=rows.filter(r=>r[k]!=null).map(r=>r[k]);return v.length?v[v.length-1]:null;};
+  const a=streakOf(rows,'alkohol',x=>x===0);
+  const aH=rows.filter(r=>r.alkohol!=null).slice(-7).reduce((s,r)=>s+r.alkohol,0);
+  const vd=napokOta(VERVETEL);
+  if(aH>=100)w.push({t:'🍷 Az elmúlt napokban <b>'+aH+' g</b> tiszta alkohol.',s:'Ez az a mennyiség, ami a HRV-det, az alvásodat és a böjtödet egyszerre húzza le. Nem külön problémák — egy probléma.'});
+  if(a.n&&a.cur===0)w.push({t:'🍷 <b>Nulla</b> alkoholmentes napod van.',s:'Nem a fogyás miatt kellene kettő. Azért, hogy elmehess a vérvételre.'});
+  if(vd>2)w.push({t:'🩸 <b>'+vd+' napja</b> ígérted meg a vérvételt (2026.07.13.).',s:'Két alkoholmentes nap kell hozzá. Ennyi. Ha ez nem megy, az önmagában is olyan információ, amit el kell mondanod az orvosnak.'});
+  const hrv=last('hrv'), p=last('pulzus'), al=last('alvas'), zs=last('zsiger'), bo=last('bojt');
+  if(hrv!=null&&hrv<40)w.push({t:'❤️ HRV: <b>'+hrv+'</b> — a célod 45 volt.',s:'Alulregeneráció. A szervezeted nem pihen éjjel.'});
+  if(p!=null&&p>=58)w.push({t:'💓 Nyugalmi pulzus: <b>'+p+' bpm</b>, emelkedő trend.',s:'Egy hónap alatt 52-ről jött ide. Nem edzés miatt.'});
+  if(al!=null&&al<70)w.push({t:'😴 Alvás: <b>'+al+'/100</b> — a célod 85.',s:''});
+  if(zs!=null&&zs>=10)w.push({t:'🔴 Zsigeri zsír: <b>'+zs+'</b> — a célod 7–8.',s:'Ez a szerveid közé rakódó zsír.'});
+  if(bo!=null&&bo<16)w.push({t:'🕐 Böjt: <b>'+bo+' óra</b> — a cél 16.',s:'A böjtöd nem reggel romlik el. Este tíz után.'});
+  if(!w.length){el.style.display='none';return;}
+  el.style.display='block';
+  el.innerHTML='<div class="fig-h">⚠️ Amit ma látok rajtad</div>'+w.map(x=>`<div class="fig-i"><div class="fig-t">${x.t}</div>${x.s?`<div class="fig-s">${x.s}</div>`:''}</div>`).join('')+
+    '<div class="fig-f">Ezek nem külön bajok. Ez egy dolog, hatféleképpen kimondva.<br><br>Van egy unokád, akinek aktív nagypapa kell — és van egy küldetésed: minél több embernek segíteni ezen a bolygón. Ahhoz tovább kell élned.<br><br>Az egészséged nem hiúság. Ez az erőforrás, amiből adni tudsz. Minden év, amit megnyersz, emberekben mérhető.<br><br>Nem holnaptól. Ma.</div>';
+}
+
 function renderTrend(rows){
   const M=[
     {ic:'❤️',n:'HRV (7n)',    k:'hrv',    up:true, suf:' → 45+'},
@@ -128,6 +203,8 @@ function renderTrend(rows){
     {ic:'🔴',n:'Zsigeri zsír',k:'zsiger', up:false,suf:''},
     {ic:'🍬',n:'Cukor streak',k:'cukor',  up:true, suf:' nap'},
     {ic:'🌾',n:'Liszt streak',k:'liszt',  up:true, suf:' nap'},
+    {ic:'🕐',n:'Böjt',        k:'bojt',   up:true, suf:' óra'},
+    {ic:'🍷',n:'Alkohol',     k:'alkohol',up:false,suf:' g'},
   ];
   document.getElementById('trend').innerHTML=M.map(m=>{
     const t=trendOf(rows,m.k,m.up);
@@ -161,13 +238,13 @@ async function load(){
   let note='', rows=[];
   try{
     rows=parseTrend(await getBlocks(TREND_PAGE_ID));
-    if(rows.length===0){renderTrend([]);note='📌 a trend-tábla nem olvasható – utolsó ismert értékek';}
+    if(rows.length===0){renderTrend([]);renderAllapot([]);renderFigyelem([]);note='📌 a trend-tábla nem olvasható – utolsó ismert értékek';}
     else{
-      renderTrend(rows);
+      renderTrend(rows);renderAllapot(rows);renderFigyelem(rows);
       const last=rows[rows.length-1].datum.slice(5).replace('-','.')+'.';
       note=`trend a Notion idősorból · ${rows.length} nap · utolsó adat: ${last}`;
     }
-  }catch(e){renderTrend([]);note='📌 Notion API nem elérhető – utolsó ismert értékek';}
+  }catch(e){renderTrend([]);renderAllapot([]);renderFigyelem([]);note='📌 Notion API nem elérhető – utolsó ismert értékek';}
   renderNext7();
   document.getElementById('foot').innerHTML=
     `Frissítve: ${new Date().toLocaleTimeString('hu-HU')} · ${note}<br>`+
