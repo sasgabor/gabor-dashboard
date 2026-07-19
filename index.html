@@ -5,7 +5,7 @@
 (function(){var c="Sasgabor1959",s=sessionStorage.getItem("gos_auth");if(s!==c){var a=prompt("Jelszó szükséges:");if(a!==c){document.write("<div style=\"font-family:sans-serif;text-align:center;margin-top:20%\">Hozzáférés megtagadva.<\/div>");document.close();throw new Error("stop");}sessionStorage.setItem("gos_auth",c);}})();
 </script>
 <!--
-  GÁBOR OS DASHBOARD — v4.3 (2026.07.18.).
+  GÁBOR OS DASHBOARD — v4.4 (2026.07.19.).
   Szekciók: (1) állapot-sáv, (2) 7 napos trend, (3) következő 7 nap.
   v4.2: 🕐 Böjt oszlop (13.) + 12h+ böjt streak.
   v4.3: 🍷 Alkohol oszlop (14.) + alkoholmentes streak + FIGYELMEZTETŐ sáv.
@@ -13,6 +13,9 @@
     szóljon rá, ha a számok rossz irányba mennek. A figyelmeztetés NEM kozmetika:
     a küszöbök a saját céljaiból jönnek (HRV 45+, alvás 85+, zsigeri 7-8, böjt 16h).
     Új oszlop MINDIG a tábla végére, hogy a régi parser se olvasson rossz oszlopot.
+  v4.4: pótolva a HIÁNYZÓ napi alkohol-küszöb (bármely nap > 40 g). A gabor-os skill
+    három küszöböt ír elő (>40 g/nap VAGY >100 g/7 nap VAGY 0 alkoholmentes nap);
+    a v4.3 csak az utóbbi kettőt nézte, így egy 45 g-os nap némán elment.
   ADATFORRÁSOK:
   • 7 napos trend: a Notion "📊 Napi mérések – Trend napló (standard)" oldal EGYETLEN
     táblájából, a meglévő proxyn át (GET blocks/children). Egy sor = egy nap, fix oszlopok.
@@ -178,6 +181,8 @@ function renderFigyelem(rows){
   const a=streakOf(rows,'alkohol',x=>x===0);
   const aH=rows.filter(r=>r.alkohol!=null).slice(-7).reduce((s,r)=>s+r.alkohol,0);
   const vd=napokOta(VERVETEL);
+  const aMax=rows.filter(r=>r.alkohol!=null).slice(-7).reduce((m,r)=>Math.max(m,r.alkohol),0);
+  if(aMax>40)w.push({t:'🍷 Volt egy nap <b>'+aMax+' g</b> tiszta alkohollal.',s:'A saját küszöböd 40 g. Egyetlen ilyen este két napra viszi le a HRV-det és tolja el a böjtödet.'});
   if(aH>=100)w.push({t:'🍷 Az elmúlt napokban <b>'+aH+' g</b> tiszta alkohol.',s:'Ez az a mennyiség, ami a HRV-det, az alvásodat és a böjtödet egyszerre húzza le. Nem külön problémák — egy probléma.'});
   if(a.n&&a.cur===0)w.push({t:'🍷 <b>Nulla</b> alkoholmentes napod van.',s:'Nem a fogyás miatt kellene kettő. Azért, hogy elmehess a vérvételre.'});
   if(vd>2)w.push({t:'🩸 <b>'+vd+' napja</b> ígérted meg a vérvételt (2026.07.13.).',s:'Két alkoholmentes nap kell hozzá. Ennyi. Ha ez nem megy, az önmagában is olyan információ, amit el kell mondanod az orvosnak.'});
