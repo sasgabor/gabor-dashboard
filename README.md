@@ -13,7 +13,7 @@ Két élő, statikus HTML dashboard, GitHub Pages-en hosztolva. Mindkettő Notio
 | Fájl         | Mit csinál                                                                                               | Utolsó frissítés (kód) | Szinkron-komment frissült |
 | ------------ | --------------------------------------------------------------------------------------------------------- | ---------------- | --- |
 | `index.html` | Gábor OS – személyes önfejlesztési dashboard (Feelfit, Garmin, streak-ek, napirend)                       | 2026.06.23.      | 2026.07.01. (csak a komment szövege, kód nem változott) |
-| `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR)  | 2026.07.14.      | – |
+| `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR)  | 2026.07.19.      | – |
 | `README.md`  | Ez a fájl                                                                                                  | 2026.07.02.      | – |
 
 ⚠️ **2026.07.02-i javítás:** az `index.html` sorában korábban tévesen "2026.07.02." szerepelt "utolsó frissítés"-ként — ez saját elírás volt, nem valós adat. A fájl tényleges kódmódosítása 2026.06.23-i, csak a benne lévő szinkron-komment *szövege* frissült 07.01-én (rendszerprompt-verzió-szám). Ez most, egy élő fájl-megnyitással megerősítve, javítva.
@@ -102,6 +102,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum       | Mi változott                                                                                                                                                                   |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026.07.19. | „Projektek & Iniciatívák" szekció kézi szinkron: felkerült az **RPOS – Rosas Folyamatoptimalizálási Rendszer** kártya a 🔄 Folyamatban oszlopba (anonimizált megfogalmazás, ügyfélnév és ár nélkül); a szekció láblécének dátuma 2026.07.19-re állítva. |
 | 2026.07.12. | Nincs kódváltozás — a mindenkori rendszerprompt elérhetővé vált egy élő Notion-oldalon is (Projekten kívüli hozzáféréshez), lásd `rosas-session-close` Skill. |
 | 2026.07.12. | Kódváltozás: az EU AI Act kártya AI Literacy-sora frissítve (valós, folyamatban lévő oktatási státuszra); a deprecated "Rendszerprompt verzió" mezők (fejléc-komment, alcím, footer) ténylegesen törölve a fájlból. |
 | 2026.07.03. | Nincs kódváltozás — csak dokumentációs javítás: a README ezen fájl-táblázatban lévő "árbevétel-KPI 549 M / jelszó nincs megerősítve" megjegyzése elavult volt; élő, forráskód-szintű ellenőrzés megerősítette, hogy a `rosas.html` már 550 M-et és a helyes jelszót tartalmazza. |
