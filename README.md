@@ -12,7 +12,7 @@ Két élő, statikus HTML dashboard, GitHub Pages-en hosztolva. Mindkettő Notio
 
 | Fájl         | Mit csinál                                                                                               | Utolsó frissítés (kód) | Szinkron-komment frissült |
 | ------------ | --------------------------------------------------------------------------------------------------------- | ---------------- | --- |
-| `index.html` | Gábor OS – személyes önfejlesztési dashboard (Feelfit, Garmin, streak-ek, napirend)                       | 2026.06.23.      | 2026.07.01. (csak a komment szövege, kód nem változott) |
+| `index.html` | Gábor OS – személyes önfejlesztési dashboard (Feelfit, Garmin, böjt-streak, napirend)                     | 2026.07.23. (v5.0) | – |
 | `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR)  | 2026.07.19.      | – |
 | `README.md`  | Ez a fájl                                                                                                  | 2026.07.02.      | – |
 
@@ -24,11 +24,13 @@ Két élő, statikus HTML dashboard, GitHub Pages-en hosztolva. Mindkettő Notio
 
 Személyes egészség- és önfejlesztési dashboard.
 
-**Tartalma:** napi streak-ek (cukor-, lisztmentes napok), Feelfit testösszetétel-adatok, Garmin élettani mutatók (pulzus, HRV, alvás, böjt), napi cél-üzenet, napirend.
+**Tartalma:** 🕐 12h+ böjt-streak és 7 napos böjt-átlag, Feelfit testösszetétel-adatok, Garmin élettani mutatók (pulzus, HRV, alvás, lépés), küszöb-alapú figyelmeztető sáv, napi cél-üzenet, napirend.
 
-**Adatforrás:** Notion *Egészség & Életmód* oldal, kizárólag a lap tetején lévő **"📌 Legfrissebb ismert adatok"** canonical táblából, `parseCanonicalTable()` + `mapCanonicalRows()` olvassa ki élőben (2026.06.23-tól — korábban szétszórt kulcsszó-kereséssel az egész lapon, ez törékeny volt). Ha a Notion API nem elérhető, a dashboard fallback módra vált beégetett, legutóbb ismert értékekkel, 📌-jelzéssel — ezt NEM kell minden adatfrissítésnél bumpolni, csak alkalmanként.
+⚠️ **2026.07.23. (v5.0):** a korábbi 🍬 cukormentes / 🌾 lisztmentes / 🍷 alkoholmentes streak-ek **kivezetve** – Gábor döntése alapján a cukor-, szénhidrát- és alkoholkövetés megszűnt (az adat nem tükrözte a valóságot). A böjt-követés teljes értékű maradt.
 
-**Frissítési protokoll:** lásd a `gabor-dashboard` Skill-t. Napi adatfeldolgozás után NEM kell automatikusan újragenerálni — a dashboard élőben olvas a Notion canonical tábláról.
+**Adatforrás:** a Notion **`📊 Napi mérések – Trend napló (standard)`** oldal egyetlen, **12 oszlopos** táblája (`TREND_PAGE_ID` + `parseTrend()` + `COLS`), a Cloudflare proxyn át. Egy sor = egy nap. ⚠️ A `📌 Legfrissebb ismert adatok` canonical táblát a dashboard **v4.1 (2026.07.17.) óta NEM olvassa** – a `parseCanonicalTable()` / `mapCanonicalRows()` kivezetve. *(Ez a bekezdés 2026.07.23-ig tévesen a régi állapotot írta le; az audit során javítva.)* Ha a Notion API nem elérhető, a dashboard fallback módra vált beégetett, legutóbb ismert értékekkel, 📌-jelzéssel — ezt NEM kell minden adatfrissítésnél bumpolni, csak alkalmanként.
+
+**Frissítési protokoll:** lásd a `gabor-dashboard` Skill-t. Napi adatfeldolgozás után NEM kell automatikusan újragenerálni — a dashboard élőben olvas a trend-napló oldalról. Újragenerálás csak kódváltozásnál, `FALLBACK`-frissítésnél vagy kérésre.
 
 📝 **Rendszerprompt élő Notion-másolata** (2026.07.12. óta): a mindenkori Gábor OS rendszerprompt egy 1:1 másolata elérhető Notionban is, hogy Projekten kívüli beszélgetésben se kelljen manuálisan bemásolni — lásd a `gabor-session-close` Skill-t.
 
@@ -87,6 +89,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum       | Mi változott                                                                                                                                                                                                                                                                                                                                                                                                      |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 2026.07.23. | **v5.0** — 🚫 Cukor / szénhidrát / alkohol követés KIVEZETVE (Gábor döntése): a trend-tábla **14 → 12 oszlopos** (`Cukor` és `Liszt` visszamenőleg törölve a Notionban), a `COLS` és a `parseTrend()` ezzel EGYÜTT átírva. Törölve: a `renderTrend()` 🍬/🌾/🍷 sorai, a `renderAllapot()` alkoholmentes streak-blokkja (helyette 🕐 böjt-streak + böjt-átlag), és a `renderFigyelem()` mindhárom alkohol-küszöbe. Az `alkohol` a `COLS`-ban marad (a Notionban néma adat), de a dashboard sehol nem jeleníti meg. `FALLBACK` frissítve. ⚠️ Tanulság: ez volt az első oszlop-TÖRLÉS — a „mindig a végére" bővítési szabály csak hozzáadáskor véd, törléskor minden mögötte lévő index elmozdul, ezért a Notion-tábla és a parser módosítása CSAK EGYÜTT végezhető, különben a parser nem hibát dob, hanem csendben rossz oszlopot olvas. |
 | 2026.07.19. | **v4.4** — Pótolva a `renderFigyelem()`-ből hiányzó napi alkohol-küszöb (bármely nap > 40 g). A `gabor-os` skill három küszöböt ír elő (>40 g/nap, >100 g/7 nap, 0 alkoholmentes nap); a v4.3 csak az utóbbi kettőt implementálta, így egy 45 g-os nap figyelmeztetés nélkül elment. |
 | 2026.07.18. | **v4.3** — 🍷 `Alkohol` oszlop (a trend-tábla 14., utolsó oszlopa) + `renderAllapot()` (böjt-streak és alkoholmentes streak egymás mellett) + `renderFigyelem()`: küszöb-alapú figyelmeztető sáv, ami akkor szólal meg, ha a mutatók a saját céljaitól rossz irányba mennek. Gábor kérése: a rendszer ne csak udvariasan jelöljön, hanem szóljon rá. |
 | 2026.07.18. | **v4.2** — 🕐 `Böjt` oszlop (a trend-tábla 13. oszlopa) + 12h+ böjt streak. Bővítési szabály rögzítve: új oszlop MINDIG a `COLS` tömb végére, sosem közé (különben a parser csendben rossz adatot olvas). A fejléc szinkron-kommentjéből törölve az elavult „Jelenlegi rendszerprompt verzió" mező. |
