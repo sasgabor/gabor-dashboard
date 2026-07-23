@@ -5,7 +5,7 @@
 (function(){var c="Sasgabor1959",s=sessionStorage.getItem("gos_auth");if(s!==c){var a=prompt("Jelszó szükséges:");if(a!==c){document.write("<div style=\"font-family:sans-serif;text-align:center;margin-top:20%\">Hozzáférés megtagadva.<\/div>");document.close();throw new Error("stop");}sessionStorage.setItem("gos_auth",c);}})();
 </script>
 <!--
-  GÁBOR OS DASHBOARD — v4.4 (2026.07.19.).
+  GÁBOR OS DASHBOARD — v5.0 (2026.07.23.).
   Szekciók: (1) állapot-sáv, (2) 7 napos trend, (3) következő 7 nap.
   v4.2: 🕐 Böjt oszlop (13.) + 12h+ böjt streak.
   v4.3: 🍷 Alkohol oszlop (14.) + alkoholmentes streak + FIGYELMEZTETŐ sáv.
@@ -13,12 +13,18 @@
     szóljon rá, ha a számok rossz irányba mennek. A figyelmeztetés NEM kozmetika:
     a küszöbök a saját céljaiból jönnek (HRV 45+, alvás 85+, zsigeri 7-8, böjt 16h).
     Új oszlop MINDIG a tábla végére, hogy a régi parser se olvasson rossz oszlopot.
-  v4.4: pótolva a HIÁNYZÓ napi alkohol-küszöb (bármely nap > 40 g). A gabor-os skill
-    három küszöböt ír elő (>40 g/nap VAGY >100 g/7 nap VAGY 0 alkoholmentes nap);
-    a v4.3 csak az utóbbi kettőt nézte, így egy 45 g-os nap némán elment.
+  v4.4: pótolva a HIÁNYZÓ napi alkohol-küszöb (bármely nap > 40 g).
+  v5.0 (2026.07.23.) — CUKOR / SZÉNHIDRÁT / ALKOHOL KIVEZETVE (Gábor döntése).
+    • A trend-napló tábla 14 → 12 OSZLOP: a `Cukor` és `Liszt` oszlop visszamenőleg
+      törölve a Notionban. A COLS tömb ezzel EGYÜTT módosult — oszloptörléskor a
+      parser átírása KÖTELEZŐ, különben csendben rossz oszlopot olvasna.
+    • Az `Alkohol` oszlop MEGMARAD a Notionban (néma adatrögzítés), de a dashboard
+      SEHOL nem jeleníti meg: kikerült a trend-listából, az állapot-sávból és a
+      figyelmeztető sávból. Ha valaha visszakérnéd, az adat ott lesz.
+    • Az állapot-sáv mostantól egyetlen mutatót visz: a 12h+ böjt streaket.
   ADATFORRÁSOK:
   • 7 napos trend: a Notion "📊 Napi mérések – Trend napló (standard)" oldal EGYETLEN
-    táblájából, a meglévő proxyn át (GET blocks/children). Egy sor = egy nap, fix oszlopok.
+    táblájából, a meglévő proxyn át (GET blocks/children). Egy sor = egy nap, 12 fix oszlop.
     A dashboard az utolsó (max 7) nem-üres értékből számol irányt metrikánként.
     Ezt a táblát Claude tölti a napi feldolgozáskor; Gábornak nincs teendője.
   • Következő 7 nap: NEM élő Google Calendar API — a gabor-os rotációból generálva.
@@ -106,7 +112,7 @@
 const TREND_PAGE_ID='3a0a30954a7481a6b8f2f7aa230fe981'; // 📊 Napi mérések – Trend napló (standard)
 const PROXY='https://notion-proxy.sasgabor-sg.workers.dev';
 // Vész-fallback (csak ha a Notion nem elérhető) – az utolsó ismert nem-üres értékek.
-const FALLBACK={hrv:29,pulzus:59,alvas:68,lepesek:6384,suly:93.75,zsiger:14,cukor:34,liszt:24,bojt:13.4,alkohol:78,datum:'07.16.'};
+const FALLBACK={hrv:34,pulzus:60,alvas:57,lepesek:6089,suly:92.6,zsiger:14,testzsir:32.2,izom:59.6,bmr:1726,bojt:13.7,datum:'07.22.'};
 // Megígért vérvétel dátuma. Ha megtörtént, Claude törli/átállítja a következő generáláskor.
 const VERVETEL='2026-07-13';
 
@@ -120,13 +126,15 @@ async function getBlocks(id){const d=await nf(`blocks/${id}/children?page_size=1
 function txt(b){const t=b.type,c=b[t];if(!c)return '';if(t==='table_row'&&c.cells)return c.cells.map(cl=>cl.map(r=>r.plain_text||'').join('')).join(' | ');return (c.rich_text||c.text||[]).map(r=>r.plain_text||'').join('');}
 
 // A standard idősor-tábla beolvasása: minden dátummal kezdődő sor egy nap.
-const COLS=['datum','hrv','pulzus','alvas','lepesek','suly','zsiger','testzsir','izom','bmr','cukor','liszt','bojt','alkohol'];
+// ⚠️ 12 oszlop (v5.0). A sorrendnek EGYEZNIE kell a Notion trend-napló fejlécével.
+// Az 'alkohol' beolvasásra kerül, de a dashboard SEHOL nem jeleníti meg (Gábor döntése, 2026.07.23.).
+const COLS=['datum','hrv','pulzus','alvas','lepesek','suly','zsiger','testzsir','izom','bmr','bojt','alkohol'];
 function num(s){if(!s)return null;const m=s.match(/-?\d+[.,]?\d*/);return m?parseFloat(m[0].replace(',','.')):null;}
 function parseTrend(blocks){
   const rows=[];
   for(const b of blocks){
     const parts=txt(b).split('|').map(x=>x.trim());
-    if(parts.length>=12 && /^\d{4}-\d{2}-\d{2}$/.test(parts[0])){
+    if(parts.length>=10 && /^\d{4}-\d{2}-\d{2}$/.test(parts[0])){
       const o={datum:parts[0]};
       for(let i=1;i<COLS.length;i++)o[COLS[i]]=num(parts[i]);
       rows.push(o);
@@ -163,14 +171,14 @@ function avg7(rows,key){
 function napokOta(iso){return Math.floor((new Date()-new Date(iso))/86400000);}
 
 function renderAllapot(rows){
-  const b=streakOf(rows,'bojt',x=>x>=12), a=streakOf(rows,'alkohol',x=>x===0);
-  const bA=avg7(rows,'bojt'), aH=rows.filter(r=>r.alkohol!=null).slice(-7).reduce((s,r)=>s+r.alkohol,0);
+  const b=streakOf(rows,'bojt',x=>x>=12);
+  const bA=avg7(rows,'bojt');
   const el=document.getElementById('allapot');
-  if(!b.n&&!a.n){el.innerHTML='<div class="st-main">Még nincs elég adat</div>';return;}
+  if(!b.n){el.innerHTML='<div class="st-main">Még nincs elég adat</div>';return;}
   el.innerHTML=
     `<div class="st-grid">`+
       `<div class="st-box${b.cur>0?' st-on':''}"><div class="st-num">${b.cur}</div><div class="st-lab">🕐 nap 12h+ böjt</div><div class="st-mini">leghosszabb: ${b.best} · átlag: ${bA!=null?bA+' óra':'–'}</div></div>`+
-      `<div class="st-box${a.cur>0?' st-on':' st-bad'}"><div class="st-num">${a.cur}</div><div class="st-lab">🍷 alkoholmentes nap</div><div class="st-mini">leghosszabb: ${a.best} · 7 nap alatt: ${aH} g</div></div>`+
+      `<div class="st-box"><div class="st-num">${bA!=null?bA:'–'}</div><div class="st-lab">🕐 böjt-átlag (7 nap)</div><div class="st-mini">a cél 16 óra</div></div>`+
     `</div>`;
 }
 
@@ -178,14 +186,10 @@ function renderAllapot(rows){
 function renderFigyelem(rows){
   const el=document.getElementById('figyelem'), w=[];
   const last=k=>{const v=rows.filter(r=>r[k]!=null).map(r=>r[k]);return v.length?v[v.length-1]:null;};
-  const a=streakOf(rows,'alkohol',x=>x===0);
-  const aH=rows.filter(r=>r.alkohol!=null).slice(-7).reduce((s,r)=>s+r.alkohol,0);
+  // v5.0: az alkohol-küszöbök kivezetve (Gábor döntése, 2026.07.23.). Az adat a
+  // Notionban megmarad, de itt nem jelenik meg és nem generál figyelmeztetést.
   const vd=napokOta(VERVETEL);
-  const aMax=rows.filter(r=>r.alkohol!=null).slice(-7).reduce((m,r)=>Math.max(m,r.alkohol),0);
-  if(aMax>40)w.push({t:'🍷 Volt egy nap <b>'+aMax+' g</b> tiszta alkohollal.',s:'A saját küszöböd 40 g. Egyetlen ilyen este két napra viszi le a HRV-det és tolja el a böjtödet.'});
-  if(aH>=100)w.push({t:'🍷 Az elmúlt napokban <b>'+aH+' g</b> tiszta alkohol.',s:'Ez az a mennyiség, ami a HRV-det, az alvásodat és a böjtödet egyszerre húzza le. Nem külön problémák — egy probléma.'});
-  if(a.n&&a.cur===0)w.push({t:'🍷 <b>Nulla</b> alkoholmentes napod van.',s:'Nem a fogyás miatt kellene kettő. Azért, hogy elmehess a vérvételre.'});
-  if(vd>2)w.push({t:'🩸 <b>'+vd+' napja</b> ígérted meg a vérvételt (2026.07.13.).',s:'Két alkoholmentes nap kell hozzá. Ennyi. Ha ez nem megy, az önmagában is olyan információ, amit el kell mondanod az orvosnak.'});
+  if(vd>2)w.push({t:'🩸 <b>'+vd+' napja</b> ígérted meg a vérvételt (2026.07.13.).',s:'Az időpont 2026.07.27. 08:20-ra le van foglalva.'});
   const hrv=last('hrv'), p=last('pulzus'), al=last('alvas'), zs=last('zsiger'), bo=last('bojt');
   if(hrv!=null&&hrv<40)w.push({t:'❤️ HRV: <b>'+hrv+'</b> — a célod 45 volt.',s:'Alulregeneráció. A szervezeted nem pihen éjjel.'});
   if(p!=null&&p>=58)w.push({t:'💓 Nyugalmi pulzus: <b>'+p+' bpm</b>, emelkedő trend.',s:'Egy hónap alatt 52-ről jött ide. Nem edzés miatt.'});
@@ -206,10 +210,7 @@ function renderTrend(rows){
     {ic:'👟',n:'Lépések',     k:'lepesek',up:true, suf:''},
     {ic:'⚖️',n:'Testsúly',    k:'suly',   up:false,suf:' kg'},
     {ic:'🔴',n:'Zsigeri zsír',k:'zsiger', up:false,suf:''},
-    {ic:'🍬',n:'Cukor streak',k:'cukor',  up:true, suf:' nap'},
-    {ic:'🌾',n:'Liszt streak',k:'liszt',  up:true, suf:' nap'},
     {ic:'🕐',n:'Böjt',        k:'bojt',   up:true, suf:' óra'},
-    {ic:'🍷',n:'Alkohol',     k:'alkohol',up:false,suf:' g'},
   ];
   document.getElementById('trend').innerHTML=M.map(m=>{
     const t=trendOf(rows,m.k,m.up);
