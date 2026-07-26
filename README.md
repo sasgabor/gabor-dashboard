@@ -1,6 +1,6 @@
 # gabor-dashboard
 
-Két élő, statikus HTML dashboard, GitHub Pages-en hosztolva. Mindkettő Notion API-ból tölt adatot egy Cloudflare Worker proxy-n keresztül.
+Két HTML dashboard, GitHub Pages-en hosztolva. Az **`index.html`** (Gábor OS) élőben tölt adatot a Notion API-ból egy Cloudflare Worker proxy-n keresztül. A **`rosas.html`** (Rosas) ezzel szemben **statikus** – nem hív Notion API-t (0 db `fetch()`), a tartalmát **kézzel kell szinkronizálni** (ld. a `rosas-dashboard` Skillt).
 
 🔗 **Élő linkek:**
 - Gábor OS: <https://sasgabor.github.io/gabor-dashboard/>
@@ -13,7 +13,7 @@ Két élő, statikus HTML dashboard, GitHub Pages-en hosztolva. Mindkettő Notio
 | Fájl         | Mit csinál                                                                                               | Utolsó frissítés (kód) | Szinkron-komment frissült |
 | ------------ | --------------------------------------------------------------------------------------------------------- | ---------------- | --- |
 | `index.html` | Gábor OS – személyes önfejlesztési dashboard (Feelfit, Garmin, böjt-streak, napirend)                     | 2026.07.23. (v5.0) | – |
-| `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR)  | 2026.07.19.      | – |
+| `rosas.html` | Rosas Logisztikai Kft. – belső céges dashboard (pénzügy, KPI projekt, marketing átvétel, EU AI Act/GDPR)  | 2026.07.24.      | – |
 | `README.md`  | Ez a fájl                                                                                                  | 2026.07.02.      | – |
 
 ⚠️ **2026.07.02-i javítás:** az `index.html` sorában korábban tévesen "2026.07.02." szerepelt "utolsó frissítés"-ként — ez saját elírás volt, nem valós adat. A fájl tényleges kódmódosítása 2026.06.23-i, csak a benne lévő szinkron-komment *szövege* frissült 07.01-én (rendszerprompt-verzió-szám). Ez most, egy élő fájl-megnyitással megerősítve, javítva.
@@ -57,7 +57,7 @@ Céges belső dashboard a Rosas Logisztikai Kft. számára.
 
 ---
 
-## 🔧 Technikai architektúra (mindkét dashboardra)
+## 🔧 Technikai architektúra (az élő Notion-olvasáshoz — jelenleg CSAK az `index.html`)
 
 ```
 Böngésző → Cloudflare Worker (notion-proxy) → Notion API → vissza
@@ -117,6 +117,7 @@ Mindkét fájlt **manuálisan** kell feltölteni:
 
 | Dátum       | Mi változott                                                                                                                                                                                                                                                                                            |
 | ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 2026.07.27. | **Javítás (a Rosas záró önellenőrző kérdéssor első éles futásán talált hiba).** A 3. sor azt állította, hogy „mindkettő" Notion API-ból tölt adatot egy Cloudflare Worker proxy-n keresztül — a `rosas.html` valójában **statikus** (0 db `fetch()`), amit a fájl saját „Adatforrás" bekezdése (Rosas szakasz) is kimondott, tehát a README önmagának mondott ellent. Működési következmény: az olvasó azt hihette, hogy a `rosas.html` magától frissül, és kihagyja a KÖTELEZŐ kézi szinkront. A 3. sor pontosítva; ugyanezért a „Technikai architektúra" szakasz címéből is kikerült a „mindkét dashboardra" (azonos hibaosztály, egy körben javítva). Fájlok táblázat: `rosas.html` „utolsó frissítés (kód)" 2026.07.19. → **2026.07.24.** (30 157 bájt, „3. munkamenet" lábléc) — ez megjegyzés-szintű elavulás volt, nem hiba. |
 | 2026.07.12. | Fájlok táblázat: `rosas.html` "utolsó frissítés (kód)" dátuma 07.12-re javítva. Mindkét szekcióhoz (Gábor OS, Rosas) megjegyzés + changelog-sor a rendszerprompt élő Notion-másolatáról. Rosas changelog: AI Literacy-sor és deprecated verziómezők törlésének rögzítése.                        |
 | 2026.07.03. | Rosas szakasz "Ismert, még nem javított tétel" figyelmeztetése lezártra frissítve — élő, forráskód-szintű ellenőrzés (Rosas oldalról) megerősítette, hogy a `rosas.html` már 550 M árbevétel-KPI-t és a helyes `Rosas2026` jelszót tartalmazza. Ld. Rosas "⚖️ Döntési Napló".                        |
 | 2026.07.02. | Fájlok táblázat: index.html "utolsó frissítés" dátuma javítva (téves 07.02 → helyes 06.23, kód/komment külön oszlopban). Rosas árbevétel/jelszó ismert-tétel megjegyzés hozzáadva.                                                                                                                    |
