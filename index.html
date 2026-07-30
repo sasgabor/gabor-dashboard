@@ -5,7 +5,14 @@
 (function(){var c="Sasgabor1959",s=sessionStorage.getItem("gos_auth");if(s!==c){var a=prompt("Jelszó szükséges:");if(a!==c){document.write("<div style=\"font-family:sans-serif;text-align:center;margin-top:20%\">Hozzáférés megtagadva.<\/div>");document.close();throw new Error("stop");}sessionStorage.setItem("gos_auth",c);}})();
 </script>
 <!--
-  GÁBOR OS DASHBOARD — v5.0 (2026.07.23.).
+  GÁBOR OS DASHBOARD — v5.1 (2026.07.30.).
+  v5.1 (2026.07.30.) — A MEGÍGÉRT VÉRVÉTEL SZÁMLÁLÓJA KIVEZETVE. A 2026.07.13-án megígért
+    vérvétel 2026.07.27. 08:20-kor MEGTÖRTÉNT, a canonical tábla számlálója LEÁLLT, a
+    dashboard viszont 17 napja hamis figyelmeztetést mutatott a figyelmeztető sáv tetején.
+    A mechanizmus MEGMARAD: `VERVETEL=null` = nincs függőben lévő vizsgálat; új ígéretnél
+    elég az ISO dátumot beírni. Egyéb változás NINCS — se oszlop, se parser, se küszöb.
+  Az alábbi sorok a KORÁBBI verziók dátumbélyeges tényállításai — nem írandók át.
+  v5.0 (2026.07.23.).
   Szekciók: (1) állapot-sáv, (2) 7 napos trend, (3) következő 7 nap.
   v4.2: 🕐 Böjt oszlop (13.) + 12h+ böjt streak.
   v4.3: 🍷 Alkohol oszlop (14.) + alkoholmentes streak + FIGYELMEZTETŐ sáv.
@@ -113,8 +120,11 @@ const TREND_PAGE_ID='3a0a30954a7481a6b8f2f7aa230fe981'; // 📊 Napi mérések �
 const PROXY='https://notion-proxy.sasgabor-sg.workers.dev';
 // Vész-fallback (csak ha a Notion nem elérhető) – az utolsó ismert nem-üres értékek.
 const FALLBACK={hrv:34,pulzus:60,alvas:57,lepesek:6089,suly:92.6,zsiger:14,testzsir:32.2,izom:59.6,bmr:1726,bojt:13.7,datum:'07.22.'};
-// Megígért vérvétel dátuma. Ha megtörtént, Claude törli/átállítja a következő generáláskor.
-const VERVETEL='2026-07-13';
+// Megígért, még el nem végzett vérvétel dátuma. `null` = nincs függőben lévő vérvétel.
+// v5.1 (2026.07.30.): a 2026.07.13-án megígért vérvétel 2026.07.27. 08:20-kor MEGTÖRTÉNT,
+// a canonical tábla számlálója LEÁLLT – a dashboard viszont 17 napja hamis figyelmeztetést
+// mutatott. Ha új vizsgálat lesz megígérve, ide kell az ISO dátum, és a sáv magától újraindul.
+const VERVETEL=null;
 
 const DOW=['vasárnap','hétfő','kedd','szerda','csütörtök','péntek','szombat'];
 const DOW_S=['V','H','K','Sze','Cs','P','Szo'];
@@ -126,7 +136,7 @@ async function getBlocks(id){const d=await nf(`blocks/${id}/children?page_size=1
 function txt(b){const t=b.type,c=b[t];if(!c)return '';if(t==='table_row'&&c.cells)return c.cells.map(cl=>cl.map(r=>r.plain_text||'').join('')).join(' | ');return (c.rich_text||c.text||[]).map(r=>r.plain_text||'').join('');}
 
 // A standard idősor-tábla beolvasása: minden dátummal kezdődő sor egy nap.
-// ⚠️ 12 oszlop (v5.0). A sorrendnek EGYEZNIE kell a Notion trend-napló fejlécével.
+// ⚠️ 12 oszlop (v5.0 óta). A sorrendnek EGYEZNIE kell a Notion trend-napló fejlécével.
 // Az 'alkohol' beolvasásra kerül, de a dashboard SEHOL nem jeleníti meg (Gábor döntése, 2026.07.23.).
 const COLS=['datum','hrv','pulzus','alvas','lepesek','suly','zsiger','testzsir','izom','bmr','bojt','alkohol'];
 function num(s){if(!s)return null;const m=s.match(/-?\d+[.,]?\d*/);return m?parseFloat(m[0].replace(',','.')):null;}
@@ -188,8 +198,8 @@ function renderFigyelem(rows){
   const last=k=>{const v=rows.filter(r=>r[k]!=null).map(r=>r[k]);return v.length?v[v.length-1]:null;};
   // v5.0: az alkohol-küszöbök kivezetve (Gábor döntése, 2026.07.23.). Az adat a
   // Notionban megmarad, de itt nem jelenik meg és nem generál figyelmeztetést.
-  const vd=napokOta(VERVETEL);
-  if(vd>2)w.push({t:'🩸 <b>'+vd+' napja</b> ígérted meg a vérvételt (2026.07.13.).',s:'Az időpont 2026.07.27. 08:20-ra le van foglalva.'});
+  if(VERVETEL){const vd=napokOta(VERVETEL);
+    if(vd>2)w.push({t:'🩸 <b>'+vd+' napja</b> ígérted meg a vérvételt.',s:'Foglald le az időpontot.'});}
   const hrv=last('hrv'), p=last('pulzus'), al=last('alvas'), zs=last('zsiger'), bo=last('bojt');
   if(hrv!=null&&hrv<40)w.push({t:'❤️ HRV: <b>'+hrv+'</b> — a célod 45 volt.',s:'Alulregeneráció. A szervezeted nem pihen éjjel.'});
   if(p!=null&&p>=58)w.push({t:'💓 Nyugalmi pulzus: <b>'+p+' bpm</b>, emelkedő trend.',s:'Egy hónap alatt 52-ről jött ide. Nem edzés miatt.'});
