@@ -5,7 +5,14 @@
 (function(){var c="Sasgabor1959",s=sessionStorage.getItem("gos_auth");if(s!==c){var a=prompt("Jelszó szükséges:");if(a!==c){document.write("<div style=\"font-family:sans-serif;text-align:center;margin-top:20%\">Hozzáférés megtagadva.<\/div>");document.close();throw new Error("stop");}sessionStorage.setItem("gos_auth",c);}})();
 </script>
 <!--
-  GÁBOR OS DASHBOARD — v5.1 (2026.07.30.).
+  GÁBOR OS DASHBOARD — v5.2 (2026.09.10.).
+  v5.2 (2026.09.10.) — CSAK A VÉSZ-FALLBACK FRISSÍTVE, Gábor kérésére. A `FALLBACK` a
+    07.20–07.22-i értékeket hordozta (hét hetes); most a trend-napló metrikánként utolsó
+    NEM-üres értékei: HRV 35 (09.09.) · pulzus 54, alvás 63, lépés 5296 (09.03.) · súly 92.05,
+    zsigeri 14, testzsír 31.8, izom 59.6, BMR 1726 (09.10.) · böjt 14.6 (09.08.).
+    Csak akkor látszik, ha a Notion nem elérhető. Egyéb változás NINCS — se oszlop, se parser,
+    se küszöb, se VERVETEL.
+  v5.1 (2026.07.30.).
   v5.1 (2026.07.30.) — A MEGÍGÉRT VÉRVÉTEL SZÁMLÁLÓJA KIVEZETVE. A 2026.07.13-án megígért
     vérvétel 2026.07.27. 08:20-kor MEGTÖRTÉNT, a canonical tábla számlálója LEÁLLT, a
     dashboard viszont 17 napja hamis figyelmeztetést mutatott a figyelmeztető sáv tetején.
@@ -119,7 +126,7 @@
 const TREND_PAGE_ID='3a0a30954a7481a6b8f2f7aa230fe981'; // 📊 Napi mérések – Trend napló (standard)
 const PROXY='https://notion-proxy.sasgabor-sg.workers.dev';
 // Vész-fallback (csak ha a Notion nem elérhető) – az utolsó ismert nem-üres értékek.
-const FALLBACK={hrv:34,pulzus:60,alvas:57,lepesek:6089,suly:92.6,zsiger:14,testzsir:32.2,izom:59.6,bmr:1726,bojt:13.7,datum:'07.22.'};
+const FALLBACK={hrv:35,pulzus:54,alvas:63,lepesek:5296,suly:92.05,zsiger:14,testzsir:31.8,izom:59.6,bmr:1726,bojt:14.6,datum:'09.10.'};
 // Megígért, még el nem végzett vérvétel dátuma. `null` = nincs függőben lévő vérvétel.
 // v5.1 (2026.07.30.): a 2026.07.13-án megígért vérvétel 2026.07.27. 08:20-kor MEGTÖRTÉNT,
 // a canonical tábla számlálója LEÁLLT – a dashboard viszont 17 napja hamis figyelmeztetést
